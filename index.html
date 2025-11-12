@@ -31,8 +31,6 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9998; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; padding: 24px; border-radius: 16px; max-width: 600px; width: 90%; max-height: 90%; overflow-y: auto; }
-        
-        /* --- START: ‼️ แก้ไข (เปลี่ยน Loader) ‼️ --- */
         .loader {
           transform: translateZ(1px);
         }
@@ -68,8 +66,6 @@
             transform: rotateY(3600deg);
           }
         }
-        /* --- END: ‼️ แก้ไข (เปลี่ยน Loader) ‼️ --- */
-        
         .file-preview-item {
             position: relative;
             border: 1px solid #ddd;
@@ -157,6 +153,11 @@
   </div>
   <div id="mainApp" class="hidden">
    <div class="fixed top-4 right-4 z-50 flex items-center space-x-4">
+    
+    <button id="sidebarToggleMobile" class="md:hidden bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:bg-teal-50 transition duration-300" title="เปิด/ปิดเมนู">
+        <i class="fas fa-bars text-xl text-teal-500"></i>
+    </button>
+
     <button id="refreshDataBtn" class="bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:bg-teal-50 transition duration-300" title="รีเฟรชข้อมูลหน้านี้"> 
         <i class="fas fa-sync-alt text-xl text-teal-500"></i> 
     </button>
@@ -191,22 +192,42 @@
     </div>
     <div id="notificationDropdownContent" class="p-4"></div>
    </div>
-   <aside class="fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-40">
+
+   <div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+
+   <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50 transition-all duration-300 transform -translate-x-full md:translate-x-0">
     <div class="p-6 border-b border-gray-200">
-     <div class="flex items-center space-x-3"><i class="fas fa-file-contract text-3xl text-teal-500"></i>
-      <div>
+     <div class="flex items-center space-x-3">
+      <i class="fas fa-file-contract text-3xl text-teal-500"></i>
+      <div class="sidebar-brand-text">
        <h2 class="text-xl font-bold text-gray-800">ระบบจัดการสัญญา</h2>
        <p class="text-xs text-gray-500">Contract Management</p>
       </div>
      </div>
     </div>
-    <nav class="p-4"><a href="#" data-page="dashboard" class="sidebar-menu-item active flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-line w-5"></i> <span>Dashboard</span> </a> <a href="#" data-page="contracts" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-file-contract w-5"></i> <span>สัญญาเช่า</span> </a> <a href="#" data-page="notifications" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-bell w-5"></i> <span>แจ้งเตือน</span> </a> <a href="#" data-page="reports" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-bar w-5"></i> <span>รายงาน</span> </a> <a href="#" data-page="logs" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-history w-5"></i> <span>Logs</span> </a> <a href="#" data-page="users" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-users w-5"></i> <span>จัดการผู้ใช้</span> </a> <a href="#" data-page="about" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-info-circle w-5"></i> <span>เกี่ยวกับระบบ</span> </a> 
+    <nav class="p-4">
+        <a href="#" data-page="dashboard" class="sidebar-menu-item active flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-line w-5"></i> <span class="sidebar-text">Dashboard</span> </a> 
+        <a href="#" data-page="contracts" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-file-contract w-5"></i> <span class="sidebar-text">สัญญาเช่า</span> </a> 
+        <a href="#" data-page="notifications" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-bell w-5"></i> <span class="sidebar-text">แจ้งเตือน</span> </a> 
+        <a href="#" data-page="reports" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-bar w-5"></i> <span class="sidebar-text">รายงาน</span> </a> 
+        <a href="#" data-page="logs" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-history w-5"></i> <span class="sidebar-text">Logs</span> </a> 
+        <a href="#" data-page="users" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-users w-5"></i> <span class="sidebar-text">จัดการผู้ใช้</span> </a> 
+        <a href="#" data-page="about" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-info-circle w-5"></i> <span class="sidebar-text">เกี่ยวกับระบบ</span> </a> 
     </nav>
+    
+    <div class="absolute bottom-4 left-0 w-full px-4">
+        <button id="sidebarToggleDesktop" class="hidden md:flex items-center justify-center w-full h-10 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300">
+            <i class="fas fa-chevron-left text-gray-600 transition-all duration-300"></i>
+        </button>
+    </div>
+
    </aside>
-   <main class="ml-64 p-8 relative">
+
+   <main id="mainContent" class="md:ml-64 p-8 relative transition-all duration-300">
+
     <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-50 hidden items-center justify-center rounded-2xl">
      <span class="loader"></span>
-     </div>
+    </div>
     <div id="dashboardPage" class="page-content">
      <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard ภาพรวมระบบ</h1>
@@ -261,8 +282,8 @@
      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <div class="bg-white rounded-2xl shadow-md p-6">
        <h2 class="text-xl font-bold text-gray-800 mb-4">สถานะสัญญา</h2>
-       <div class="w-1/2 mx-auto"> 
-        <canvas id="statusChart"></canvas>
+       <div class="w-5/6 mx-auto"> 
+       <canvas id="statusChart"></canvas>
        </div>
       </div>
       <div class="bg-white rounded-2xl shadow-md p-6">
@@ -307,7 +328,7 @@
      <div class="bg-white rounded-2xl shadow-md p-6 relative">
       <div id="tableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
          <span class="loader"></span>
-         </div>
+      </div>
 
       <div class="flex justify-between items-center mb-4">
        <h2 class="text-xl font-bold text-gray-800">รายการสัญญา</h2><button id="addContractBtn" data-page="addContract" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition duration-300"> <i class="fas fa-plus mr-2"></i>เพิ่มสัญญา </button>
@@ -449,7 +470,7 @@
      <div class="bg-white rounded-2xl shadow-md p-6 relative">
       <div id="logsTableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
          <span class="loader"></span>
-         </div>
+      </div>
 
       <div class="table-container">
        <table>
@@ -475,7 +496,7 @@
      <div class="bg-white rounded-2xl shadow-md p-6 relative">
       <div id="usersTableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
          <span class="loader"></span>
-         </div>
+      </div>
 
       <div class="flex justify-between items-center mb-4">
        <h2 class="text-xl font-bold text-gray-800">รายการผู้ใช้</h2>
@@ -632,7 +653,7 @@
     </div>
    </div>
    
-   <div id="changePasswordModal" class="modal">
+    <div id="changePasswordModal" class="modal">
         <div class="modal-content max-w-md">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-gray-800">เปลี่ยนรหัสผ่าน</h2>
@@ -662,7 +683,8 @@
             </form>
         </div>
     </div>
-    </div>
+
+  </div>
   <script>
     const GAS_CONFIG = {
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -671,7 +693,7 @@
         API_URL: 'https://script.google.com/macros/s/AKfycbynnJlF5ddIN7m8MCLjOaInasnnhcW-rXpqC--gUYqyLvPHfeF8aLoHrIAR932rXGjBAQ/exec', 
         TIMEOUT: 60000 
     };
-    const CONFIG = { currentUser: null, contracts: [], branches: [], logs: [], users: [], statusChart: null, regionChart: null };
+    const CONFIG = { currentUser: null, contracts: [], branches: [], logs: [], users: [], statusChart: null, regionChart: null, isSidebarCollapsed: false };
     
     const fileManager = {
         add: [],
@@ -733,10 +755,7 @@
         addUser: d => apiRequest('addUser', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
         updateUser: d => apiRequest('updateUser', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
         deleteUser: u => apiRequest('deleteUser', { username: u, currentUser: CONFIG.currentUser }, 'POST'),
-            
-        // --- START: ‼️ เพิ่ม ‼️ ---
         changePassword: d => apiRequest('changePassword', { ...d, currentUser: CONFIG.currentUser }, 'POST')
-        // --- END: เพิ่ม ‼️ ---
     };
 
     const UI = {
@@ -785,18 +804,65 @@
     const getDaysRemaining = endDate => Math.ceil((new Date(endDate) - new Date()) / 864e5);
     const getStatusBadge = status => ({ active: '<span class="badge badge-active">ยังไม่ครบกำหนด</span>', expiring: '<span class="badge badge-expiring">ใกล้หมดอายุ</span>', expired: '<span class="badge badge-expired">หมดอายุแล้ว</span>' })[status] || '';
 
-    // --- START: ‼️ แก้ไข (ฟังก์ชัน Login) ‼️ ---
+    function toggleSidebarDesktop() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+        const sidebarBrandText = document.querySelector('.sidebar-brand-text');
+        const sidebarMenuItems = document.querySelectorAll('.sidebar-menu-item');
+        const toggleIcon = document.querySelector('#sidebarToggleDesktop i');
+
+        CONFIG.isSidebarCollapsed = !CONFIG.isSidebarCollapsed;
+        localStorage.setItem('sidebarCollapsed', CONFIG.isSidebarCollapsed);
+
+        if (CONFIG.isSidebarCollapsed) {
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-[4.5rem]'); // 72px
+            mainContent.classList.remove('md:ml-64');
+            mainContent.classList.add('md:ml-[4.5rem]');
+            sidebarTexts.forEach(span => span.classList.add('hidden'));
+            sidebarBrandText.classList.add('hidden');
+            sidebarMenuItems.forEach(item => item.classList.add('justify-center'));
+            toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+        } else {
+            sidebar.classList.add('w-64');
+            sidebar.classList.remove('w-[4.5rem]');
+            mainContent.classList.add('md:ml-64');
+            mainContent.classList.remove('md:ml-[4.5rem]');
+            sidebarTexts.forEach(span => span.classList.remove('hidden'));
+            sidebarBrandText.classList.remove('hidden');
+            sidebarMenuItems.forEach(item => item.classList.remove('justify-center'));
+            toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+        }
+    }
+
+    function toggleSidebarMobile() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        sidebar.classList.toggle('-translate-x-full');
+        backdrop.classList.toggle('hidden');
+    }
+
+    function checkSidebarState() {
+        // ตั้งค่าเริ่มต้นสำหรับมือถือ (ซ่อนไว้ก่อน)
+        document.getElementById('sidebar').classList.add('-translate-x-full', 'md:translate-x-0');
+        document.getElementById('sidebarBackdrop').classList.add('hidden');
+
+        // ตรวจสอบสถานะย่อ/ขยายที่บันทึกไว้สำหรับ Desktop
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            CONFIG.isSidebarCollapsed = false; // ตั้งเป็น false เพื่อให้ฟังก์ชัน toggle ทำงานถูกต้อง
+            toggleSidebarDesktop();
+        }
+    }
+
     async function login(username, password) {
         const loginButton = document.querySelector('#loginForm button[type="submit"]');
         
-        const originalContent = loginButton.innerHTML; // 1. เก็บเนื้อหาเดิม
+        const originalContent = loginButton.innerHTML; 
         loginButton.disabled = true;
         
-        // 2. กำหนดความสูงคงที่ + จัดกลาง
         loginButton.style.height = `${loginButton.offsetHeight}px`; 
         loginButton.classList.add('flex', 'items-center', 'justify-center');
-
-        // 3. ใส่ Loader (อนิเมชั่นเหรียญ)
         loginButton.innerHTML = `<span class="loader"></span>`;
 
         try {
@@ -815,15 +881,12 @@
         } catch (error) { 
             UI.showToast(error.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
         } finally { 
-            // คืนค่าปุ่มให้กลับมาคลิกได้ (กรณี Login ล้มเหลว)
             loginButton.disabled = false;
-            loginButton.style.height = null; // 4. ลบความสูงคงที่
-            loginButton.classList.remove('flex', 'items-center', 'justify-center'); // 5. ลบคลาสจัดกลาง
-            loginButton.innerHTML = originalContent; // 6. คืนค่าเนื้อหาเดิม
+            loginButton.style.height = null; 
+            loginButton.classList.remove('flex', 'items-center', 'justify-center'); 
+            loginButton.innerHTML = originalContent; 
         }
     }
-    // --- END: ‼️ แก้ไข (ฟังก์ชัน Login) ‼️ ---
-
     function logout() {
         Swal.fire({ title: 'ออกจากระบบ?', text: 'คุณต้องการออกจากระบบใช่หรือไม่?', icon: 'question', showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก' }).then(result => {
             if (result.isConfirmed) { localStorage.removeItem('currentUser'); window.location.reload(); }
@@ -874,7 +937,9 @@
             const expiringList = contracts.filter(c => getContractStatus(c.endDate) !== 'active').sort((a, b) => getDaysRemaining(a.endDate) - getDaysRemaining(b.endDate)).slice(0, 5);
             document.getElementById('expiringContractsTable').innerHTML = expiringList.length ? expiringList.map(c => `<tr><td>${c.branchId}</td><td>${c.name}</td><td>${format.date(c.endDate)}</td><td>${getDaysRemaining(c.endDate)} วัน</td><td>${getStatusBadge(getContractStatus(c.endDate))}</td></tr>`).join('') : `<tr><td colspan="5" class="text-center text-gray-500">ไม่มีสัญญาที่ใกล้หมดอายุ</td></tr>`;
             if (CONFIG.statusChart) CONFIG.statusChart.destroy();
-            CONFIG.statusChart = new Chart(document.getElementById('statusChart'), { type: 'doughnut', data: { labels: ['ยังไม่ครบกำหนด', 'ใกล้หมดอายุ (60 วัน)', 'หมดอายุแล้ว'], datasets: [{ data: [statusCounts.active, statusCounts.expiring, statusCounts.expired], backgroundColor: ['#4DB6AC', '#FFA726', '#EF5350'], borderWidth: 0 }] }, options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'Kanit' } } } } } });
+            // --- START: ‼️ แก้ไข (เปลี่ยน cutout จาก 70% เป็น 80%) ‼️ ---
+            CONFIG.statusChart = new Chart(document.getElementById('statusChart'), { type: 'doughnut', data: { labels: ['ยังไม่ครบกำหนด', 'ใกล้หมดอายุ (60 วัน)', 'หมดอายุแล้ว'], datasets: [{ data: [statusCounts.active, statusCounts.expiring, statusCounts.expired], backgroundColor: ['#4DB6AC', '#FFA726', '#EF5350'], borderWidth: 0 }] }, options: { responsive: true, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'Kanit' } } } } } });
+            // --- END: ‼️ แก้ไข ‼️ ---
             const districtData = contracts.reduce((acc, c) => { acc[c.district] = (acc[c.district] || 0) + c.monthlyRent; return acc; }, {});
             const sortedDistricts = Object.keys(districtData).sort();
             if (CONFIG.regionChart) CONFIG.regionChart.destroy();
@@ -1158,6 +1223,14 @@
     }
 
     function navigateToPage(pageName) {
+        // ปิดเมนูมือถืออัตโนมัติเมื่อคลิก
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+
         document.querySelectorAll('.page-content').forEach(p => {
             p.classList.add('hidden');
             p.classList.remove('animate-page-load');
@@ -1257,6 +1330,12 @@
             loadDashboard();
         }
 
+        checkSidebarState(); 
+        
+        document.getElementById('sidebarToggleDesktop').addEventListener('click', toggleSidebarDesktop);
+        document.getElementById('sidebarToggleMobile').addEventListener('click', toggleSidebarMobile);
+        document.getElementById('sidebarBackdrop').addEventListener('click', toggleSidebarMobile);
+
         document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); login(document.getElementById('username').value, document.getElementById('password').value); });
         
         document.getElementById('logoutBtn').addEventListener('click', e => { e.preventDefault(); logout(); });
@@ -1281,12 +1360,10 @@
                 const icon = document.querySelector('#refreshDataBtn i');
                 icon.classList.add('fa-spin'); 
                 
-                // --- START: ‼️ แก้ไข (รีเซ็ต Animation ก่อนโหลด) ‼️ ---
                 const currentPageElement = document.getElementById(`${currentPageId}Page`);
                 if (currentPageElement) {
                     currentPageElement.classList.remove('animate-page-load');
                 }
-                // --- END: แก้ไข ---
                 
                 pageLoaders[currentPageId]()
                     .finally(() => {
@@ -1302,12 +1379,13 @@
             const notificationDropdown = document.getElementById('notificationDropdown');
             const userMenuButton = document.getElementById('userMenuButton');
             const userDropdown = document.getElementById('userDropdown');
+            const mobileToggleBtn = document.getElementById('sidebarToggleMobile');
 
             if (!notificationDropdown.classList.contains('hidden') && !bell.contains(e.target) && !notificationDropdown.contains(e.target) && !e.target.closest('#notificationBell')) {
                 notificationDropdown.classList.add('hidden');
             }
             
-            if (!userDropdown.classList.contains('hidden') && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target) && !e.target.closest('#userMenuButton')) {
+            if (!userDropdown.classList.contains('hidden') && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target) && !e.target.closest('#userMenuButton') && !mobileToggleBtn.contains(e.target)) {
                 userDropdown.classList.add('hidden');
             }
 
@@ -1339,10 +1417,7 @@
         setupModal('addUserModal', 'addUserBtn', ['closeAddUserModal', 'cancelAddUser']);
         setupModal('editUserModal', null, ['closeEditUserModal', 'cancelEditUser']);
         setupModal('editModal', null, ['closeEditModal', 'cancelEdit']);
-
-        // --- START: ‼️ เพิ่ม ‼️ ---
         setupModal('changePasswordModal', 'changePasswordBtn', ['closeChangePasswordModal', 'cancelChangePassword']);
-        // --- END: เพิ่ม ‼️ ---
 
         document.getElementById('addContractForm').addEventListener('submit', async (e) => {
             e.preventDefault(); 
@@ -1421,7 +1496,6 @@
             }
         });
 
-        // --- START: ‼️ เพิ่ม ‼️ ---
         document.getElementById('changePasswordForm').addEventListener('submit', async e => {
             e.preventDefault();
             const form = e.target;
@@ -1438,7 +1512,6 @@
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
             
             try {
-                // เรียกใช้ API ที่เราสร้างในขั้นตอนที่ 1
                 const { message } = await api.changePassword({ 
                     oldPassword: data.oldPassword, 
                     newPassword: data.newPassword 
@@ -1453,7 +1526,6 @@
                 submitButton.innerHTML = '<i class="fas fa-key mr-2"></i>ยืนยันการเปลี่ยนแปลง';
             }
         });
-        // --- END: เพิ่ม ‼️ ---
 
         document.getElementById('addContractFiles').addEventListener('change', e => handleFileSelection(e, 'add'));
         document.getElementById('editContractFiles').addEventListener('change', e => handleFileSelection(e, 'edit'));
