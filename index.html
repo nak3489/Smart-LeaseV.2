@@ -1,398 +1,1463 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการสัญญาเช่าอัจฉริยะ</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-    <style>
-        /* CSS is identical */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        :root {
-            --primary-color: #003092;
-            --accent-color: #FF4F0F;
-            --success-color: #06923E;
-            --warning-color: #FCC737;
-            --danger-color: #d91e18;
-            --primary-gradient: linear-gradient(45deg, #003092, #0048d8);
-            --accent-gradient: linear-gradient(45deg, #FF4F0F, #ff713b);
-            --primary-color-light: rgba(0, 48, 146, 0.1);
-            --sidebar-bg: #003092;
-            --body-bg: #f0f4f9;
-            --card-bg: #ffffff;
-            --text-dark: #1e293b;
-            --text-light: #ffffff;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --border-radius-xl: 0.75rem;
-            --border-radius-md: 0.5rem;
-            --soft-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-            --hover-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารสัญญาเช่าตึกสำนักงาน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+        body { box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        * { font-family: 'Kanit', sans-serif; }
+        .sidebar-menu-item { transition: all 0.3s ease; }
+        .sidebar-menu-item:hover { background-color: #AED581; transform: translateX(5px); }
+        .sidebar-menu-item.active { background-color: #AED581; }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .badge-active { background-color: #AED581; color: #2E7D32; }
+        .badge-expiring { background-color: #FFCA28; color: #F57F17; }
+        .badge-expired { background-color: #EF5350; color: white; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #26A69A; color: white; padding: 12px; text-align: left; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background-color: #f5f5f5; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9998; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; max-width: 600px; width: 90%; max-height: 90%; overflow-y: auto; }
+        
+        /* --- START: ‼️ แก้ไข (เปลี่ยน Loader) ‼️ --- */
+        .loader {
+          transform: translateZ(1px);
         }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--body-bg); color: var(--text-dark); }
-        #login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--body-bg); }
-        .login-box { border-radius: var(--border-radius-xl); width: 100%; max-width: 400px; padding: 2.5rem; background: var(--card-bg); box-shadow: var(--hover-shadow); animation: fadeIn 0.5s ease-out; border: 1px solid var(--border-color); }
-        .login-box h2 { color: var(--primary-color); }
-        #app-wrapper { display: flex; }
-        #sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--text-light); min-height: 100vh; border-right: 1px solid var(--border-color); transition: width 0.3s ease; }
-        .sidebar-header { padding: 20px; text-align: center; background-color: rgba(0,0,0,0.1); }
-        .sidebar-header h3 { margin: 0; font-size: 1.6rem; font-weight: 600; color: var(--text-light); }
-        .sidebar-menu { list-style: none; padding: 1rem 0; }
-        .sidebar-menu li a { display: flex; align-items: center; padding: 14px 25px; margin: 5px 15px; color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: all 0.3s ease; border-radius: var(--border-radius-md); font-weight: 500; }
-        .sidebar-menu li a:hover { background-color: rgba(0,0,0,0.2); color: var(--text-light); }
-        .sidebar-menu li a.active { background: var(--accent-gradient); color: #fff; box-shadow: 0 4px 10px -2px rgba(255, 79, 15, 0.4); }
-        .sidebar-menu li a .material-icons { margin-right: 15px; }
-        #content-wrapper { flex-grow: 1; }
-        .topbar { background: var(--card-bg); padding: 10px 30px; display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid var(--border-color); }
-        main { padding: 2.5rem; }
-        .page-header h1 { font-weight: 700; font-size: 2.2rem; color: var(--primary-color); }
-        .page-content { display: none; }
-        .page-content.active { display: block; animation: fadeIn 0.4s ease-out; }
-        .card { border: 1px solid var(--border-color); border-radius: var(--border-radius-xl); box-shadow: var(--soft-shadow); background-color: var(--card-bg); transition: all 0.3s ease; }
-        .summary-card:hover { transform: translateY(-5px); box-shadow: var(--hover-shadow); border-color: var(--primary-color); }
-        .summary-card.clickable { cursor: pointer; }
-        .summary-card .icon-circle { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1.25rem; font-size: 28px; }
-        h4.card-title { font-weight: 700; font-size: 1.75rem; color: var(--text-dark); }
-        .card-title.loading { width: 70px; height: 1.75rem; border-radius: 6px; animation: skeleton-loading 1s linear infinite alternate; }
-        @keyframes skeleton-loading { 0% { background-color: hsl(200, 20%, 80%); } 100% { background-color: hsl(200, 20%, 95%); } }
-        .btn { border-radius: var(--border-radius-md); font-weight: 600; padding: 0.6rem 1.2rem; transition: all 0.2s ease-in-out; border: none; }
-        .btn-primary { background: var(--accent-gradient); color: #fff; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px -5px rgba(255, 79, 15, 0.5); }
-        .form-control, .form-select { border-radius: var(--border-radius-md); border: 1px solid var(--border-color); padding: 0.75rem 1rem; }
-        .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 0.25rem var(--primary-color-light); }
-        .form-control:read-only { background-color: #f1f5f9; }
-        .bg-primary-light { background-color: #e0e9fe; color: var(--primary-color); }
-        .bg-success-light { background-color: #d9f9e5; color: var(--success-color); }
-        .bg-warning-light { background-color: #fff8e3; color: #e9b30f; }
-        .bg-danger-light { background-color: #ffe5e4; color: var(--danger-color); }
-        .table thead th { background-color: #f8fafc; color: var(--text-muted); }
-        .table-hover tbody tr:hover { background-color: #f5f8ff; box-shadow: var(--hover-shadow); position: relative; z-index: 2; transform: scale(1.01); }
-        .table-hover tbody tr:hover td { background: transparent; }
-        .status-badge { padding: 0.4em 0.9em; font-size: 0.8rem; font-weight: 500; border-radius: 50rem; }
-        .status-normal { background-color: var(--success-color); color: white; }
-        .status-warning { background-color: var(--warning-color); color: #413207; }
-        .status-expired { background-color: var(--danger-color); color: white; }
-        .sortable { cursor: pointer; position: relative; padding-right: 35px !important; }
-        .sort-icon { position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); font-size: 1.4rem; color: #94a3b8; }
-        .sortable:hover .sort-icon { color: var(--text-dark); }
-        .sortable.asc .sort-icon, .sortable.desc .sort-icon { color: var(--primary-color); }
-        .modal-content { border-radius: var(--border-radius-xl); border: none; box-shadow: var(--hover-shadow); }
-        .swal2-popup { border-radius: var(--border-radius-xl) !important; font-family: 'Kanit', sans-serif !important; box-shadow: var(--hover-shadow) !important; }
-        .swal2-confirm { background: var(--accent-gradient) !important; border:0; border-radius: var(--border-radius-md) !important; }
-    </style>
-</head>
-<body>
+        .loader:after {
+          content: '$';
+          display: inline-block;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          text-align: center;
+          line-height:40px;
+          font-size: 32px;
+          font-weight: bold;
+          background: #FFD700;
+          color: #DAA520;
+          border: 4px double ;
+          box-sizing: border-box;
+          box-shadow:  2px 2px 2px 1px rgba(0, 0, 0, .1);
+          animation: coin-flip 4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+        }
+        @keyframes coin-flip {
+          0%, 100% {
+            animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5);
+          }
+          0% {
+            transform: rotateY(0deg);
+          }
+          50% {
+            transform: rotateY(1800deg);
+            animation-timing-function: cubic-bezier(0, 0.5, 0.5, 1);
+          }
+          100% {
+            transform: rotateY(3600deg);
+          }
+        }
+        /* --- END: ‼️ แก้ไข (เปลี่ยน Loader) ‼️ --- */
+        
+        .file-preview-item {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .file-preview-item img, .file-preview-item a {
+            display: block;
+            width: 100%;
+            height: 100px;
+        }
+        .file-preview-item img {
+            object-fit: cover;
+        }
+        .file-preview-item .remove-file-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1;
+            transition: background-color 0.2s;
+        }
+        .file-preview-item .remove-file-btn:hover {
+            background-color: rgb(220, 38, 38);
+        }
 
-    <div id="login-page"> <div class="login-box text-center"> <h2 class="mb-3">Smart Lease</h2> <p class="text-muted mb-4">ระบบจัดการสัญญาเช่า</p> <form id="login-form"> <div class="form-floating mb-3"><input type="email" class="form-control" id="email" placeholder="name@example.com" required autocomplete="email"></div> <div class="form-floating mb-3"><input type="password" class="form-control" id="password" placeholder="Password" required autocomplete="current-password"></div> <div id="login-error" class="text-danger mb-3 d-none"></div> <button type="button" id="login-button" class="btn btn-primary w-100 btn-lg">เข้าสู่ระบบ</button> </form> </div> </div>
-    <div id="app-wrapper" class="d-none"> <nav id="sidebar"> <div class="sidebar-header"><h3>Smart Lease</h3></div> <ul class="sidebar-menu"> <li><a href="#dashboard" class="nav-link active"><i class="material-icons">dashboard</i><span>แดชบอร์ด</span></a></li> <li><a href="#contracts" class="nav-link"><i class="material-icons">description</i><span>จัดการสัญญา</span></a></li> <li id="menu-users" class="admin-only d-none"><a href="#users" class="nav-link"><i class="material-icons">group</i><span>จัดการผู้ใช้งาน</span></a></li> <li id="menu-logs" class="admin-only d-none"><a href="#logs" class="nav-link"><i class="material-icons">history</i><span>ประวัติการใช้งาน</span></a></li> </ul> </nav> <div id="content-wrapper"> <div class="topbar"> <div class="dropdown"> <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false"> <div class="user-info me-2"> <span id="user-display-name" class="fw-bold">Username</span> <div id="user-display-role" class="user-role">Role</div> </div> </a> <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser"><li><a id="logout-button" class="dropdown-item" href="#">ออกจากระบบ</a></li></ul> </div> </div> <main> <div id="dashboard-content" class="page-content active"> <div class="page-header"><h1>แดชบอร์ด</h1><p class="text-muted" id="dashboard-subtitle"></p></div> <div> <div class="row g-4 mb-4"> <div class="col-md-6 col-lg-3"><div id="card-total" class="card summary-card clickable"><div class="card-body"><div class="icon-circle bg-primary-light"><i class="material-icons">description</i></div><div><h6 class="card-subtitle mb-2 text-muted">สัญญาทั้งหมด</h6><h4 class="card-title" id="total-contracts-card"></h4></div></div></div></div> <div class="col-md-6 col-lg-3"><div id="card-expiring" class="card summary-card clickable"><div class="card-body"><div class="icon-circle bg-warning-light"><i class="material-icons" style="color:#a27b07">warning</i></div><div><h6 class="card-subtitle mb-2 text-muted">ใกล้หมดอายุ (90 วัน)</h6><h4 class="card-title" id="expiring-contracts-card"></h4></div></div></div></div> <div class="col-md-6 col-lg-3"><div id="card-expired" class="card summary-card clickable"><div class="card-body"><div class="icon-circle bg-danger-light"><i class="material-icons">error</i></div><div><h6 class="card-subtitle mb-2 text-muted">สัญญาหมดอายุแล้ว</h6><h4 class="card-title" id="expired-contracts-card"></h4></div></div></div></div> <div class="col-md-6 col-lg-3"><div class="card summary-card"><div class="card-body"><div class="icon-circle bg-success-light"><i class="material-icons">attach_money</i></div><div><h6 class="card-subtitle mb-2 text-muted">ค่าเช่ารวม/เดือน</h6><h4 class="card-title" id="total-rent-card"></h4></div></div></div></div> </div> <div class="row"><div class="col-12"><div class="card"><div class="card-body"><h5 class="card-title">รายการสัญญาที่ต้องให้ความสนใจ</h5><div class="table-responsive"><table class="table table-hover"><thead><tr><th>สาขา</th><th>เขต</th><th>วันหมดอายุ</th><th>สถานะ</th><th class="text-end">ค่าเช่า/เดือน</th></tr></thead><tbody id="attention-list"></tbody></table></div></div></div></div></div> </div> </div> <div id="contracts-content" class="page-content"> <div class="page-header d-flex justify-content-between align-items-center"><h1>จัดการสัญญา</h1><button id="add-contract-btn" class="btn btn-primary writable-only d-none"><i class="material-icons align-middle me-1">add</i> เพิ่มสัญญาใหม่</button></div> <div class="card filter-card mb-4 border-0 shadow-none bg-transparent"><div class="row g-3 align-items-end"><div class="col-lg-4 col-md-12"><label for="contract-search-input" class="form-label">ค้นหา</label><input type="text" id="contract-search-input" class="form-control" placeholder="รหัสสาขา, ชื่อ, เขต..."></div><div class="col-lg-2 col-md-6"><label for="contract-status-filter" class="form-label">สถานะ</label><select id="contract-status-filter" class="form-select"><option value="">ทั้งหมด</option><option value="status-normal">ปกติ</option><option value="status-warning">ใกล้หมดอายุ</option><option value="status-expired">หมดอายุแล้ว</option></select></div><div class="col-lg-2 col-md-6"><label for="contract-start-date" class="form-label">วันสิ้นสุด (เริ่ม)</label><input type="date" id="contract-start-date" class="form-control"></div><div class="col-lg-2 col-md-6"><label for="contract-end-date" class="form-label">วันสิ้นสุด (ถึง)</label><input type="date" id="contract-end-date" class="form-control"></div><div class="col-lg-2 col-md-6"><button id="contract-clear-filter-btn" class="btn btn-outline-secondary w-100">ล้างตัวกรอง</button></div></div></div> <div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover"> 
-            <thead><tr> <th class="sortable" data-sort="branchId">รหัสสาขา<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="name">ชื่อสาขา<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="district">เขต<i class="material-icons sort-icon">unfold_more</i></th> <th>จำนวนคูหา</th> <th class="sortable" data-sort="monthlyRent">ค่าเช่า/เดือน<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="startDate">วันเริ่มสัญญา<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable asc" data-sort="endDate">วันสิ้นสุดสัญญา<i class="material-icons sort-icon">expand_less</i></th> <th>สถานะแจ้งเตือน</th> <th>ไฟล์แนบ</th> <th class="writable-only d-none text-end">การกระทำ</th> </tr></thead> 
-            <tbody id="contracts-table-body"></tbody> 
-        </table></div></div></div> </div> <div id="users-content" class="page-content"> <div class="page-header d-flex justify-content-between align-items-center"><h1>จัดการผู้ใช้งาน</h1><button id="add-user-btn" class="btn btn-primary"><i class="material-icons align-middle me-1">add</i> เพิ่มผู้ใช้ใหม่</button></div> <div class="card filter-card mb-4 border-0 shadow-none bg-transparent"><div class="row g-3"><div class="col-md-6"><label for="user-search-input" class="form-label">ค้นหา (Email, ชื่อ)</label><input type="text" id="user-search-input" class="form-control" placeholder="พิมพ์เพื่อค้นหา..."></div><div class="col-md-6"><label for="user-role-filter" class="form-label">ตำแหน่ง (Role)</label><select id="user-role-filter" class="form-select"><option value="">ทั้งหมด</option><option value="Admin">Admin</option><option value="Regional Manager">Regional Manager</option><option value="District Manager">District Manager</option><option value="Employee">Employee</option></select></div></div></div> <div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover"> <thead><tr> <th class="sortable asc" data-sort="email">Email<i class="material-icons sort-icon">expand_less</i></th> <th class="sortable" data-sort="name">ชื่อ<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="role">ตำแหน่ง (Role)<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="permissionArea">เขต/ภาคที่ดูแล<i class="material-icons sort-icon">unfold_more</i></th> <th class="text-end">การกระทำ</th> </tr></thead> <tbody id="users-table-body"></tbody> </table></div></div></div> </div> <div id="logs-content" class="page-content"> <div class="page-header"><h1>ประวัติการใช้งาน</h1></div> <div class="card filter-card mb-4 border-0 shadow-none bg-transparent"><div class="row g-3 align-items-end"><div class="col-md-5"><label for="log-search-input" class="form-label">ค้นหา (ผู้ใช้, กิจกรรม, รายละเอียด)</label><input type="text" id="log-search-input" class="form-control" placeholder="พิมพ์เพื่อค้นหา..."></div><div class="col-md-3"><label for="log-start-date" class="form-label">ตั้งแต่วันที่</label><input type="date" id="log-start-date" class="form-control"></div><div class="col-md-3"><label for="log-end-date" class="form-label">ถึงวันที่</label><input type="date" id="log-end-date" class="form-control"></div><div class="col-md-1"><button id="log-clear-filter-btn" class="btn btn-outline-secondary w-100">ล้าง</button></div></div></div> <div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover"> <thead><tr> <th class="sortable desc" data-sort="timestamp">วันที่-เวลา<i class="material-icons sort-icon">expand_more</i></th> <th class="sortable" data-sort="user">ผู้ใช้งาน<i class="material-icons sort-icon">unfold_more</i></th> <th class="sortable" data-sort="activity">กิจกรรม<i class="material-icons sort-icon">unfold_more</i></th> <th>รายละเอียด</th> </tr></thead> <tbody id="logs-table-body"></tbody> </table></div></div></div> </div> </main> </div> </div>
-    
-    <div class="modal fade" id="contract-modal" tabindex="-1" aria-labelledby="contractModalLabel" aria-hidden="true"> 
-        <div class="modal-dialog modal-lg modal-dialog-centered"> 
-            <div class="modal-content"> 
-                <div class="modal-header"><h5 class="modal-title" id="contractModalLabel">ข้อมูลสัญญา</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div> 
-                <div class="modal-body"> 
-                    <form id="contract-form" onsubmit="return false;"> 
-                        <div class="row g-3"> 
-                            <div class="col-md-4"><label for="form-contract-branchId" class="form-label">รหัสสาขา</label><input type="text" id="form-contract-branchId" class="form-control" required></div> 
-                            <div class="col-md-8"><label for="form-contract-name" class="form-label">ชื่อสาขา</label><input type="text" id="form-contract-name" class="form-control" required></div> 
-                            <div class="col-md-4"> <label for="form-contract-regional" class="form-label">ภาค</label> <input type="text" id="form-contract-regional" class="form-control" required readonly> </div> 
-                            <div class="col-md-4"> <label for="form-contract-district" class="form-label">เขต</label> <select id="form-contract-district" class="form-select" required> <option value="">-- เลือกเขต --</option> <option value="K012">K012</option> <option value="K122">K122</option> <option value="K189">K189</option> <option value="K195">K195</option> <option value="K196">K196</option> <option value="K247">K247</option> <option value="K273">K273</option> <option value="K358">K358</option> </select> </div> 
-                            <div class="col-md-4"><label for="form-contract-unitCount" class="form-label">จำนวนคูหา</label><input type="number" id="form-contract-unitCount" class="form-control"></div>
-                            <div class="col-md-4"><label for="form-contract-monthlyRent" class="form-label">ค่าเช่า/เดือน</label><input type="number" step="any" id="form-contract-monthlyRent" class="form-control" required></div> 
-                            <div class="col-md-4"><label for="form-contract-startDate" class="form-label">วันเริ่มสัญญา</label><input type="date" id="form-contract-startDate" class="form-control" required></div> 
-                            <div class="col-md-4"><label for="form-contract-endDate" class="form-label">วันสิ้นสุดสัญญา</label><input type="date" id="form-contract-endDate" class="form-control" required></div>
-                            
-                            <div class="col-12">
-                                <label class="form-label">ไฟล์สัญญาเช่า (สูงสุด 5 ไฟล์)</label>
-                                <div id="file-upload-list" class="mb-2">
-                                    <!-- รายการไฟล์ที่เลือกจะแสดงที่นี่ -->
-                                </div>
-                                <div id="add-file-container">
-                                    <!-- ปุ่มเพิ่มไฟล์จะแสดงที่นี่ -->
-                                </div>
-                            </div>
-                        </div> 
-                    </form> 
-                </div> 
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button><button type="button" class="btn btn-primary" id="save-contract-button">บันทึกข้อมูล</button></div> 
-            </div> 
-        </div> 
+        @keyframes pageFadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-page-load {
+            animation: pageFadeInUp 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-login-card {
+            animation: fadeIn 0.7s ease-out;
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+  </style>
+ </head>
+ <body class="bg-gray-100">
+  <div id="toastContainer"></div>
+  <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-400 to-green-400">
+   <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-login-card">
+    <div class="text-center mb-8 animate-slide-in" style="animation-delay: 0.1s;">
+        <i class="fas fa-file-contract text-6xl text-teal-500 mb-4"></i>
+        <h1 class="text-3xl font-bold text-gray-800">ระบบบริหารสัญญาเช่า</h1>
+        <p class="text-gray-600 mt-2">เข้าสู่ระบบเพื่อดำเนินการต่อ</p>
     </div>
-
-    <div class="modal fade" id="file-viewer-modal" tabindex="-1" aria-labelledby="fileViewerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fileViewerModalLabel">ไฟล์สัญญาแนบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="file-links-container">
-                        <!-- ลิงก์ไฟล์จะถูกสร้างโดย JavaScript ที่นี่ -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                </div>
+    <form id="loginForm" class="space-y-4">
+     <div class="animate-slide-in" style="animation-delay: 0.2s;">
+        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label> 
+        <input type="text" id="username" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="กรอกชื่อผู้ใช้">
+     </div>
+     <div class="animate-slide-in" style="animation-delay: 0.3s;">
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label> 
+        <input type="password" id="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="กรอกรหัสผ่าน">
+     </div>
+     <button type="submit" class="w-full bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300 animate-slide-in" style="animation-delay: 0.4s;"> 
+        <i class="fas fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ 
+     </button>
+    </form>
+   </div>
+  </div>
+  <div id="mainApp" class="hidden">
+   <div class="fixed top-4 right-4 z-50 flex items-center space-x-4">
+    <button id="refreshDataBtn" class="bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:bg-teal-50 transition duration-300" title="รีเฟรชข้อมูลหน้านี้"> 
+        <i class="fas fa-sync-alt text-xl text-teal-500"></i> 
+    </button>
+    
+    <button id="notificationBell" class="relative bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition duration-300"> 
+        <i class="fas fa-bell text-2xl text-teal-500"></i> 
+        <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center hidden">0</span> 
+    </button>
+    
+    <div class="relative">
+        <button id="userMenuButton" class="flex items-center space-x-2 bg-white rounded-full p-2 pr-4 shadow-lg hover:shadow-xl transition duration-300 text-left">
+            <i class="fas fa-user-circle text-3xl text-teal-500 ml-1"></i>
+            <div>
+                <p class="font-semibold text-sm text-gray-800" id="currentUserDisplayHeader">-</p>
+                <p class="text-xs text-gray-500" id="currentUserRoleHeader">-</p>
             </div>
+        </button>
+        <div id="userDropdown" class="absolute top-14 right-0 w-48 bg-white rounded-xl shadow-2xl z-40 hidden p-2">
+            <a href="#" id="changePasswordBtn" class="flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200">
+                <i class="fas fa-key w-5"></i> <span>เปลี่ยนรหัสผ่าน</span>
+            </a>
+            <a href="#" id="logoutBtn" class="flex items-center space-x-3 p-3 text-red-600 hover:bg-red-50 rounded-lg transition duration-200">
+                 <i class="fas fa-sign-out-alt w-5"></i> <span>ออกจากระบบ</span>
+            </a>
         </div>
     </div>
+   </div>
 
-    <div class="modal fade" id="user-modal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="userModalLabel">ข้อมูลผู้ใช้งาน</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><form id="user-form" onsubmit="return false;"><div class="row g-3"><div class="col-md-6"><label for="form-user-email" class="form-label">Email</label><input type="email" id="form-user-email" class="form-control" required></div><div class="col-md-6"><label for="form-user-name" class="form-label">ชื่อ-นามสกุล</label><input type="text" id="form-user-name" class="form-control" required></div><div class="col-md-6"><label for="form-user-password" class="form-label">Password</label><input type="password" id="form-user-password" class="form-control" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน"></div><div class="col-md-6"><label for="form-user-role" class="form-label">ตำแหน่ง (Role)</label><select id="form-user-role" class="form-select" required><option value="Employee">Employee</option><option value="District Manager">District Manager</option><option value="Regional Manager">Regional Manager</option><option value="Admin">Admin</option></select></div><div class="col-md-12"><label for="form-user-permissionArea" class="form-label">เขต/ภาคที่ดูแล (Permission Area)</label><input type="text" id="form-user-permissionArea" class="form-control" placeholder="เช่น K012, P026, หรือ ALL"></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button><button type="button" class="btn btn-primary" id="save-user-button">บันทึกข้อมูล</button></div></div></div></div>
+   <div id="notificationDropdown" class="fixed top-20 right-4 w-96 bg-white rounded-2xl shadow-2xl z-40 hidden max-h-96 overflow-y-auto">
+    <div class="p-4 border-b border-gray-200">
+     <h3 class="text-lg font-bold text-gray-800">การแจ้งเตือน</h3>
+    </div>
+    <div id="notificationDropdownContent" class="p-4"></div>
+   </div>
+   <aside class="fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-40">
+    <div class="p-6 border-b border-gray-200">
+     <div class="flex items-center space-x-3"><i class="fas fa-file-contract text-3xl text-teal-500"></i>
+      <div>
+       <h2 class="text-xl font-bold text-gray-800">ระบบจัดการสัญญา</h2>
+       <p class="text-xs text-gray-500">Contract Management</p>
+      </div>
+     </div>
+    </div>
+    <nav class="p-4"><a href="#" data-page="dashboard" class="sidebar-menu-item active flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-line w-5"></i> <span>Dashboard</span> </a> <a href="#" data-page="contracts" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-file-contract w-5"></i> <span>สัญญาเช่า</span> </a> <a href="#" data-page="notifications" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-bell w-5"></i> <span>แจ้งเตือน</span> </a> <a href="#" data-page="reports" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-chart-bar w-5"></i> <span>รายงาน</span> </a> <a href="#" data-page="logs" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-history w-5"></i> <span>Logs</span> </a> <a href="#" data-page="users" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-users w-5"></i> <span>จัดการผู้ใช้</span> </a> <a href="#" data-page="about" class="sidebar-menu-item flex items-center space-x-3 p-3 rounded-lg mb-2 text-gray-700"> <i class="fas fa-info-circle w-5"></i> <span>เกี่ยวกับระบบ</span> </a> 
+    </nav>
+   </aside>
+   <main class="ml-64 p-8 relative">
+    <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-50 hidden items-center justify-center rounded-2xl">
+     <span class="loader"></span>
+     </div>
+    <div id="dashboardPage" class="page-content">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard ภาพรวมระบบ</h1>
+      <p class="text-gray-600">ภาพรวมข้อมูลสัญญาเช่าทั้งหมด</p>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-md p-6 text-white card-hover">
+       <div class="flex items-center justify-between">
+        <div>
+         <p class="text-blue-100 text-sm mb-1">จำนวนสาขาทั้งหมด</p>
+         <h3 class="text-4xl font-bold" id="totalBranches">0</h3>
+        </div><i class="fas fa-building text-5xl text-blue-200"></i>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-teal-400 to-teal-500 rounded-2xl shadow-md p-6 text-white card-hover">
+       <div class="flex items-center justify-between">
+        <div>
+         <p class="text-teal-100 text-sm mb-1">ยังไม่ครบกำหนด</p>
+         <h3 class="text-4xl font-bold" id="activeContracts">0</h3>
+        </div><i class="fas fa-check-circle text-5xl text-teal-200"></i>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl shadow-md p-6 text-white card-hover">
+       <div class="flex items-center justify-between">
+        <div>
+         <p class="text-orange-100 text-sm mb-1">ใกล้หมดอายุ (60 วัน)</p>
+         <h3 class="text-4xl font-bold" id="expiringContracts">0</h3>
+        </div><i class="fas fa-exclamation-triangle text-5xl text-orange-200"></i>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-red-400 to-red-500 rounded-2xl shadow-md p-6 text-white card-hover">
+       <div class="flex items-center justify-between">
+        <div>
+         <p class="text-red-100 text-sm mb-1">หมดอายุแล้ว</p>
+         <h3 class="text-4xl font-bold" id="expiredContracts">0</h3>
+        </div><i class="fas fa-times-circle text-5xl text-red-200"></i>
+       </div>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-md p-6 text-white card-hover">
+       <div class="flex items-center justify-between">
+        <div>
+         <p class="text-green-100 text-sm mb-1">ค่าเช่ารวม (ต่อเดือน)</p>
+         <h3 class="text-3xl font-bold" id="totalRent">฿0</h3>
+        </div><i class="fas fa-money-bill-wave text-5xl text-green-200"></i>
+       </div>
+      </div>
+     </div>
+     <div class="flex flex-wrap gap-4 mb-8">
+      <button id="addContractDashboardBtn" data-page="addContract" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300"> <i class="fas fa-plus mr-2"></i>เพิ่มสัญญาใหม่ </button>
+      <button data-page="reports" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition duration-300"> <i class="fas fa-chart-bar mr-2"></i>ดูรายงานสรุป </button>
+     </div>
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-2xl shadow-md p-6">
+       <h2 class="text-xl font-bold text-gray-800 mb-4">สถานะสัญญา</h2>
+       <div class="w-1/2 mx-auto"> 
+        <canvas id="statusChart"></canvas>
+       </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-md p-6">
+       <h2 class="text-xl font-bold text-gray-800 mb-4">ค่าเช่ารายเดือนตามเขต</h2>
+       <div class="w-2/3 mx-auto">
+        <canvas id="regionChart"></canvas>
+       </div>
+      </div>
+     </div>
+     <div class="bg-white rounded-2xl shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">สัญญาที่ใกล้หมดอายุล่าสุด (5 รายการ)</h2>
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th>รหัสสาขา</th>
+          <th>ชื่ออาคาร</th>
+          <th>วันสิ้นสุด</th>
+          <th>คงเหลือ (วัน)</th>
+          <th>สถานะ</th>
+         </tr>
+        </thead>
+        <tbody id="expiringContractsTable"></tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+    <div id="contractsPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">จัดการสัญญาเช่า</h1>
+      <p class="text-gray-600">รายการสัญญาเช่าทั้งหมด</p>
+     </div>
+     <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+       <div><input type="text" id="filterDistrict" list="district-list" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="พิมพ์เพื่อค้นหาเขต..."><datalist id="district-list"></datalist>
+       </div>
+       <div><input type="text" id="filterBranch" list="branch-list" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="พิมพ์เพื่อค้นหาสาขา..."><datalist id="branch-list"></datalist>
+       </div><select id="filterStatus" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"> <option value="">ทุกสถานะ</option> <option value="active">ยังไม่ครบกำหนด</option> <option value="expiring">ใกล้หมดอายุ</option> <option value="expired">หมดอายุแล้ว</option> </select>
+      </div>
+     </div>
+     
+     <div class="bg-white rounded-2xl shadow-md p-6 relative">
+      <div id="tableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
+         <span class="loader"></span>
+         </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <div class="flex justify-between items-center mb-4">
+       <h2 class="text-xl font-bold text-gray-800">รายการสัญญา</h2><button id="addContractBtn" data-page="addContract" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition duration-300"> <i class="fas fa-plus mr-2"></i>เพิ่มสัญญา </button>
+      </div>
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th>รหัสสาขา</th>
+          <th>ชื่อสาขา</th>
+          <th>ภาค</th>
+          <th>เขต</th>
+          <th>จำนวนคูหา</th>
+          <th>วันเริ่มต้น</th>
+          <th>วันสิ้นสุด</th>
+          <th>ค่าเช่า/เดือน</th>
+          <th>สถานะ</th>
+          <th>จัดการ</th>
+         </tr>
+        </thead>
+        <tbody id="contractsTable"></tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+    <div id="addContractPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">เพิ่มสัญญาใหม่</h1>
+      <p class="text-gray-600">กรอกข้อมูลสัญญาเช่าใหม่</p>
+     </div>
+     <div class="bg-white rounded-2xl shadow-md p-6">
+      <form id="addContractForm" class="space-y-4">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">รหัสสาขา</label> <input type="text" name="branchId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="เช่น 1ฒ, 5ย">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อสาขา</label> <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="เช่น บ้านไทรงามพัฒนา">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">ภาค</label> <input type="text" name="regional" value="P026" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">เขต</label> <select name="district" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"> <option value="">เลือกเขต</option> <option value="K012">K012</option> <option value="K122">K122</option> <option value="K189">K189</option> <option value="K195">K195</option> <option value="K196">K196</option> <option value="K247">K247</option> <option value="K273">K273</option> <option value="K358">K358</option> </select>
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">จำนวนคูหา</label> <input type="number" name="unitCount" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="1">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">ค่าเช่ารายเดือน (บาท)</label> <input type="number" name="monthlyRent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="3000">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">วันเริ่มต้นสัญญา</label> <input type="date" name="startDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">วันสิ้นสุดสัญญา</label> <input type="date" name="endDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+        </div>
+        <div class="md:col-span-2">
+         <label class="block text-sm font-medium text-gray-700 mb-2">ไฟล์สัญญา (JPG, PNG) - สูงสุด 5 ไฟล์</label> 
+         <input type="file" id="addContractFiles" accept="image/jpeg,image/png" multiple class="hidden"> 
+         <label for="addContractFiles" id="addContractFileLabel" class="w-full cursor-pointer bg-teal-50 text-teal-700 font-semibold px-4 py-2 border border-gray-300 rounded-lg hover:bg-teal-100 flex items-center justify-center"> 
+          <i class="fas fa-upload mr-2"></i> 
+          <span>เลือกไฟล์...</span> 
+         </label>
+         <p class="text-sm text-gray-500 mt-1">ไฟล์จะถูกตั้งชื่อตาม รหัสสาขา_ชื่อสาขา</p>
+         <div id="addFilesPreviews" class="mt-3">
+          <div id="addFilesPreviewsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+         </div>
+        </div>
+       </div>
+       <div class="flex space-x-4 pt-4"><button type="submit" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300"> <i class="fas fa-save mr-2"></i>บันทึกสัญญา </button> <button type="button" data-page="contracts" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-300"> <i class="fas fa-times mr-2"></i>ยกเลิก </button>
+       </div>
+      </form>
+     </div>
+    </div>
+    <div id="notificationsPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">แจ้งเตือน</h1>
+      <p class="text-gray-600">การแจ้งเตือนสัญญาที่ต้องดำเนินการ</p>
+     </div>
+     <div class="space-y-4" id="notificationsList"></div>
+    </div>
+    <div id="reportsPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">รายงาน</h1>
+      <p class="text-gray-600">รายงานสรุปข้อมูลสัญญาเช่า</p>
+     </div>
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow-md p-6">
+       <h2 class="text-xl font-bold text-gray-800 mb-4">สรุปตามสถานะ</h2>
+       <div class="space-y-3">
+        <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+         <div class="flex justify-between items-center mb-2"><span class="font-semibold text-gray-700">กำลังเช่า</span> <span class="text-3xl font-bold text-green-600" id="reportActive">0</span>
+         </div>
+         <div class="flex justify-between items-center text-sm"><span class="text-gray-600">จำนวนเงิน</span> <span class="text-lg font-bold text-green-700" id="reportActiveRent">฿0</span>
+         </div>
+        </div>
+        <div class="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+         <div class="flex justify-between items-center mb-2"><span class="font-semibold text-gray-700">ใกล้หมดอายุ</span> <span class="text-3xl font-bold text-yellow-600" id="reportExpiring">0</span>
+         </div>
+         <div class="flex justify-between items-center text-sm"><span class="text-gray-600">จำนวนเงิน</span> <span class="text-lg font-bold text-yellow-700" id="reportExpiringRent">฿0</span>
+         </div>
+        </div>
+        <div class="p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+         <div class="flex justify-between items-center mb-2"><span class="font-semibold text-gray-700">หมดอายุ</span> <span class="text-3xl font-bold text-red-600" id="reportExpired">0</span>
+         </div>
+         <div class="flex justify-between items-center text-sm"><span class="text-gray-600">จำนวนเงิน</span> <span class="text-lg font-bold text-red-700" id="reportExpiredRent">฿0</span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-md p-6">
+       <h2 class="text-xl font-bold text-gray-800 mb-4">สรุปค่าเช่า</h2>
+       <div class="space-y-3">
+        <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border-l-4 border-blue-500">
+         <div class="flex justify-between items-center mb-1"><span class="font-semibold text-gray-700">ค่าเช่ารวมทั้งหมด</span>
+         </div>
+         <div class="text-right"><span class="text-3xl font-bold text-blue-600" id="reportTotalRent">฿0</span>
+         </div>
+        </div>
+        <div class="p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg border-l-4 border-indigo-500">
+         <div class="flex justify-between items-center mb-1"><span class="font-semibold text-gray-700">จำนวนสาขา</span>
+         </div>
+         <div class="text-right"><span class="text-3xl font-bold text-indigo-600" id="reportBranchCount">0</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <div id="logsPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">ประวัติการใช้งาน</h1>
+      <p class="text-gray-600">บันทึกกิจกรรมทั้งหมด</p>
+     </div>
+     <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+       <div><label for="logStartDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่เริ่มต้น</label> <input type="datetime-local" id="logStartDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label for="logEndDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่สิ้นสุด</label> <input type="datetime-local" id="logEndDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="flex space-x-2"><button id="filterLogsBtn" class="w-full bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition duration-300"> <i class="fas fa-filter mr-2"></i>กรองข้อมูล </button> <button id="resetLogsBtn" class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-300"> <i class="fas fa-undo mr-2"></i>ล้างค่า </button>
+       </div>
+      </div>
+     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUhTZWhLP4hSWkPbsO0HOnfZ_gN80FpJYyRivlN7KgouFCsDBFvem4cABllQlvRw4m/exec";
-            let currentUser = null, allContracts = [], allUsers = [], allLogs = [];
-            let contractSort = { key: 'endDate', order: 'asc' }, userSort = { key: 'email', order: 'asc' };
-            let contractModal, userModal, fileViewerModal;
-            let initialContractFilter = null;
-            const MAX_FILES = 5;
+     <div class="bg-white rounded-2xl shadow-md p-6 relative">
+      <div id="logsTableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
+         <span class="loader"></span>
+         </div>
 
-            // DOM Elements
-            const loginPage = document.getElementById('login-page');
-            const appWrapper = document.getElementById('app-wrapper');
-            const logoutButton = document.getElementById('logout-button');
-            const navLinks = document.querySelectorAll('.nav-link');
-            const pages = document.querySelectorAll('.page-content');
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th>วันที่-เวลา</th>
+          <th>ผู้ใช้</th>
+          <th>กิจกรรม</th>
+          <th>รายละเอียด</th>
+         </tr>
+        </thead>
+        <tbody id="logsTable"></tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+    <div id="usersPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">จัดการผู้ใช้</h1>
+      <p class="text-gray-600">จัดการข้อมูลผู้ใช้งานระบบ</p>
+     </div>
+     
+     <div class="bg-white rounded-2xl shadow-md p-6 relative">
+      <div id="usersTableLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 z-40 hidden items-center justify-center rounded-2xl">
+         <span class="loader"></span>
+         </div>
 
-            // Reusable Functions
-            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer) } });
-            const showSuccessToast = (message) => Toast.fire({ icon: 'success', title: message });
-            const showErrorAlert = (message) => Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: message, confirmButtonColor: 'var(--danger-color)' });
-            const showConfirmDialog = (title, text) => Swal.fire({ title: title, text: text, icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)', cancelButtonColor: '#6c757d', confirmButtonText: 'ใช่, ดำเนินการ!', cancelButtonText: 'ยกเลิก' });
-            
-            const createTableLoader = (cols) => `<tr><td colspan="${cols}" class="text-center py-5"><div class="spinner-border" style="color: var(--primary-color);" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>`;
-            const setCardPlaceholders = (loading) => {
-                const cardTitles = ['total-contracts-card', 'expiring-contracts-card', 'expired-contracts-card', 'total-rent-card'];
-                cardTitles.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (loading) { el.textContent = ''; el.classList.add('loading'); } 
-                    else { el.classList.remove('loading'); }
+      <div class="flex justify-between items-center mb-4">
+       <h2 class="text-xl font-bold text-gray-800">รายการผู้ใช้</h2>
+       <div class="w-1/3">
+           <input type="text" id="userSearchInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="ค้นหาชื่อ หรือ ชื่อผู้ใช้...">
+       </div>
+       <button id="addUserBtn" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition duration-300"> <i class="fas fa-plus mr-2"></i>เพิ่มผู้ใช้ </button>
+      </div>
+
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th>ชื่อผู้ใช้</th>
+          <th>ชื่อ</th>
+          <th>บทบาท</th>
+          <th>พื้นที่รับผิดชอบ</th>
+          <th class="text-center">เพิ่ม</th>
+          <th class="text-center">แก้ไข</th>
+          <th class="text-center">ลบ</th>
+          <th>จัดการ</th>
+         </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+    <div id="aboutPage" class="page-content hidden">
+     <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">เกี่ยวกับระบบ</h1>
+      <p class="text-gray-600">ข้อมูลระบบบริหารสัญญาเช่า</p>
+     </div>
+     <div class="bg-gradient-to-br from-teal-50 to-green-50 rounded-2xl shadow-md p-8">
+      <div class="text-center mb-8"><i class="fas fa-file-contract text-6xl text-teal-500 mb-4"></i>
+       <h2 class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-green-600 bg-clip-text text-transparent mb-2">ระบบบริหารสัญญาเช่าตึกสำนักงาน</h2>
+       <p class="text-teal-700 font-semibold">เวอร์ชัน 1.0.0</p>
+      </div>
+      <div class="space-y-4">
+       <div class="bg-white rounded-xl p-4 shadow-sm">
+        <p class="text-lg font-bold text-teal-600 mb-3"><i class="fas fa-star text-yellow-500 mr-2"></i>คุณสมบัติหลัก:</p>
+        <ul class="space-y-2 list-inside">
+         <li class="flex items-start"><span class="bg-teal-100 text-teal-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span> <span>จัดการสัญญาเช่าอาคารสำนักงาน</span></li>
+         <li class="flex items-start"><span class="bg-orange-100 text-orange-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span> <span>แจ้งเตือนสัญญาที่ใกล้หมดอายุ</span></li>
+         <li class="flex items-start"><span class="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span> <span>รายงานสรุปค่าเช่าและสถานะสัญญา</span></li>
+         <li class="flex items-start"><span class="bg-purple-100 text-purple-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">4</span> <span>บันทึกประวัติการใช้งาน</span></li>
+         <li class="flex items-start"><span class="bg-green-100 text-green-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">5</span> <span>เชื่อมต่อกับ Google Sheets</span></li>
+         <li class="flex items-start"><span class="bg-pink-100 text-pink-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">6</span> <span>Dashboard แสดงภาพรวมด้วยกราฟ</span></li>
+        </ul>
+       </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main>
+   <div id="addUserModal" class="modal">
+    <div class="modal-content">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">เพิ่มผู้ใช้ใหม่</h2><button id="closeAddUserModal" class="text-gray-500 hover:text-gray-700"> <i class="fas fa-times text-2xl"></i> </button>
+     </div>
+     <form id="addUserForm" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label> <input type="text" name="username" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label> <input type="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label> <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">บทบาท</label> <select name="role" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"> <option value="">เลือกบทบาท</option> <option value="Admin">Admin</option> <option value="Regional Manager">Regional Manager</option> <option value="District Manager">District Manager</option> <option value="Branch User">Branch User</option> </select>
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">พื้นที่รับผิดชอบ</label> <input type="text" name="permissionArea" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" placeholder="ALL, P026, K273">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">สิทธิ์การใช้งานสัญญา</label>
+        <div class="flex space-x-6"><label class="flex items-center"> <input type="checkbox" name="canAdd" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> เพิ่มข้อมูล </label> <label class="flex items-center"> <input type="checkbox" name="canEdit" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> แก้ไขข้อมูล </label> <label class="flex items-center"> <input type="checkbox" name="canDelete" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> ลบข้อมูล </label>
+        </div>
+       </div>
+      </div>
+      <div class="pt-4 flex space-x-4"><button type="submit" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300"> <i class="fas fa-save mr-2"></i>บันทึก </button> <button type="button" id="cancelAddUser" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-300"> <i class="fas fa-times mr-2"></i>ยกเลิก </button>
+      </div>
+     </form>
+    </div>
+   </div>
+   <div id="editUserModal" class="modal">
+    <div class="modal-content">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">แก้ไขผู้ใช้</h2><button id="closeEditUserModal" class="text-gray-500 hover:text-gray-700"> <i class="fas fa-times text-2xl"></i> </button>
+     </div>
+     <form id="editUserForm" class="space-y-4"><input type="hidden" name="originalUsername" id="editUserOriginalUsername">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label> <input type="text" name="username" id="editUserUsername" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน (เว้นว่างหากไม่ต้องการเปลี่ยน)</label> <input type="password" name="password" id="editUserPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label> <input type="text" name="name" id="editUserName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">บทบาท</label> <select name="role" id="editUserRole" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"> <option value="">เลือกบทบาท</option> <option value="Admin">Admin</option> <option value="Regional Manager">Regional Manager</option> <option value="District Manager">District Manager</option> <option value="Branch User">Branch User</option> </select>
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">พื้นที่รับผิดชอบ</label> <input type="text" name="permissionArea" id="editUserPermissionArea" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">สิทธิ์การใช้งานสัญญา</label>
+        <div class="flex space-x-6"><label class="flex items-center"> <input type="checkbox" name="canAdd" id="editUserCanAdd" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> เพิ่มข้อมูล </label> <label class="flex items-center"> <input type="checkbox" name="canEdit" id="editUserCanEdit" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> แก้ไขข้อมูล </label> <label class="flex items-center"> <input type="checkbox" name="canDelete" id="editUserCanDelete" class="mr-2 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"> ลบข้อมูล </label>
+        </div>
+       </div>
+      </div>
+      <div class="pt-4 flex space-x-4"><button type="submit" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300"> <i class="fas fa-save mr-2"></i>บันทึก </button> <button type="button" id="cancelEditUser" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-300"> <i class="fas fa-times mr-2"></i>ยกเลิก </button>
+      </div>
+     </form>
+    </div>
+   </div>
+   <div id="editModal" class="modal">
+    <div class="modal-content">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">แก้ไขสัญญา</h2><button id="closeEditModal" class="text-gray-500 hover:text-gray-700"> <i class="fas fa-times text-2xl"></i> </button>
+     </div>
+     <form id="editContractForm" class="space-y-4"><input type="hidden" name="id" id="editId">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">รหัสสาขา</label> <input type="text" name="branchId" id="editBranchId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อสาขา</label> <input type="text" name="name" id="editName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">ภาค</label> <input type="text" name="regional" id="editRegional" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">เขต</label> <input type="text" name="district" id="editDistrict" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">จำนวนคูหา</label> <input type="number" name="unitCount" id="editUnitCount" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">ค่าเช่ารายเดือน (บาท)</label> <input type="number" name="monthlyRent" id="editMonthlyRent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">วันเริ่มต้นสัญญา</label> <input type="date" name="startDate" id="editStartDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">วันสิ้นสุดสัญญา</label> <input type="date" name="endDate" id="editEndDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+       </div>
+       <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2">ไฟล์สัญญา</label>
+        <div id="editCurrentFiles" class="mt-1">
+         <p class="text-sm font-medium text-gray-700 mb-2">ไฟล์ปัจจุบัน:</p>
+         <div id="editCurrentFilesContainer" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+        </div>
+        <div id="editNewFiles" class="mt-3">
+         <p class="text-sm font-medium text-gray-700 mb-2">เพิ่มไฟล์ใหม่ (สูงสุด 5 ไฟล์รวมทั้งหมด):</p>
+         <input type="file" id="editContractFiles" accept="image/jpeg,image/png" multiple class="hidden"> 
+         <label for="editContractFiles" id="editContractFileLabel" class="w-full cursor-pointer bg-teal-50 text-teal-700 font-semibold px-4 py-2 border border-gray-300 rounded-lg hover:bg-teal-100 flex items-center justify-center"> 
+          <i class="fas fa-upload mr-2"></i> 
+          <span>เลือกไฟล์...</span> 
+         </label>
+         <div id="editFilesPreviewsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3"></div>
+        </div>
+       </div>
+      </div>
+      <div class="pt-4 flex space-x-4"><button type="submit" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300"> <i class="fas fa-save mr-2"></i>บันทึก </button> <button type="button" id="cancelEdit" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-300"> <i class="fas fa-times mr-2"></i>ยกเลิก </button>
+      </div>
+     </form>
+    </div>
+   </div>
+   
+   <div id="changePasswordModal" class="modal">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">เปลี่ยนรหัสผ่าน</h2>
+                <button id="closeChangePasswordModal" class="text-gray-500 hover:text-gray-700"> <i class="fas fa-times text-2xl"></i> </button>
+            </div>
+            <form id="changePasswordForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่านเดิม</label>
+                    <input type="password" name="oldPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่านใหม่</label>
+                    <input type="password" name="newPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ยืนยันรหัสผ่านใหม่</label>
+                    <input type="password" name="confirmPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div class="pt-4 flex space-x-4">
+                    <button type="submit" class="bg-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-600 transition duration-300">
+                        <i class="fas fa-key mr-2"></i>ยืนยันการเปลี่ยนแปลง
+                    </button>
+                    <button type="button" id="cancelChangePassword" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition duration-300">
+                        <i class="fas fa-times mr-2"></i>ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+  <script>
+    const GAS_CONFIG = {
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!! สำคัญ: กรุณาใส่ URL ตัวใหม่ล่าสุดที่ได้จากการ Deploy ของคุณที่นี่ !!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        API_URL: 'https://script.google.com/macros/s/AKfycbynnJlF5ddIN7m8MCLjOaInasnnhcW-rXpqC--gUYqyLvPHfeF8aLoHrIAR932rXGjBAQ/exec', 
+        TIMEOUT: 60000 
+    };
+    const CONFIG = { currentUser: null, contracts: [], branches: [], logs: [], users: [], statusChart: null, regionChart: null };
+    
+    const fileManager = {
+        add: [],
+        edit: { new: [], existing: [], toDelete: [] },
+        resetAdd: function() { this.add = []; },
+        resetEdit: function() { this.edit = { new: [], existing: [], toDelete: [] }; }
+    };
+
+    async function apiRequest(action, params = {}, method = 'GET') {
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), GAS_CONFIG.TIMEOUT)
+        );
+
+        let requestPromise;
+        if (method === 'GET') {
+            const queryParams = new URLSearchParams({ action, ...params, callback: 'dummy' });
+            requestPromise = fetch(`${GAS_CONFIG.API_URL}?${queryParams.toString()}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(text => {
+                    const jsonpData = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
+                    return JSON.parse(jsonpData);
                 });
+        } else { // POST
+            const body = { action, ...params };
+            requestPromise = fetch(GAS_CONFIG.API_URL, {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            }).then(response => {
+                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+                return response.json(); // คาดหวัง JSON ธรรมดา
+            });
+        }
+
+        const response = await Promise.race([requestPromise, timeoutPromise]);
+        if (response && typeof response.success !== 'undefined') {
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Server error');
+            }
+        } else {
+           throw new Error('Invalid response from server');
+        }
+    }
+    
+    const api = {
+        authenticateUser: (u, p) => apiRequest('authenticateUser', { username: u, password: p }),
+        getContracts: () => apiRequest('getContracts', { userRole: CONFIG.currentUser?.role, userPermissionArea: CONFIG.currentUser?.permissionArea }),
+        getBranches: () => apiRequest('getBranches', { userRole: CONFIG.currentUser?.role, userPermissionArea: CONFIG.currentUser?.permissionArea }),
+        getLogs: () => apiRequest('getLogs', { userRole: CONFIG.currentUser?.role }),
+        getUsers: () => apiRequest('getUsers', { userRole: CONFIG.currentUser?.role }),
+        addContract: d => apiRequest('addContract', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
+        updateContract: d => apiRequest('updateContract', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
+        deleteContract: id => apiRequest('deleteContract', { id, currentUser: CONFIG.currentUser }, 'POST'),
+        addUser: d => apiRequest('addUser', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
+        updateUser: d => apiRequest('updateUser', { ...d, currentUser: CONFIG.currentUser }, 'POST'),
+        deleteUser: u => apiRequest('deleteUser', { username: u, currentUser: CONFIG.currentUser }, 'POST'),
+            
+        // --- START: ‼️ เพิ่ม ‼️ ---
+        changePassword: d => apiRequest('changePassword', { ...d, currentUser: CONFIG.currentUser }, 'POST')
+        // --- END: เพิ่ม ‼️ ---
+    };
+
+    const UI = {
+        showLoading: () => document.getElementById('loadingOverlay').classList.replace('hidden', 'flex'),
+        hideLoading: () => document.getElementById('loadingOverlay').classList.replace('flex', 'hidden'),
+        showToast: (message, type = 'success') => {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icon = type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500';
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas ${icon} text-2xl"></i><span>${message}</span></div>`;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        },
+        updateVisibility: () => {
+            const user = CONFIG.currentUser; if (!user) return;
+            const elements = {
+                logsMenu: document.querySelector('[data-page="logs"]'),
+                usersMenu: document.querySelector('[data-page="users"]'),
+                addDashboardBtn: document.getElementById('addContractDashboardBtn'),
+                addContractsBtn: document.getElementById('addContractBtn')
             };
 
-            // Inactivity Logout Logic
-            let inactivityTimer;
-            const WARNING_TIME = 58 * 60 * 1000;
-            const LOGOUT_COUNTDOWN = 2 * 60 * 1000;
-            function showInactivityWarning() { let timerInterval; Swal.fire({ title: 'คุณยังอยู่หรือไม่?', html: `ระบบจะทำการออกจากระบบอัตโนมัติใน <b></b> วินาที`, icon: 'warning', timer: LOGOUT_COUNTDOWN, timerProgressBar: true, showConfirmButton: true, confirmButtonText: 'ใช้งานต่อ', confirmButtonColor: 'var(--success-color)', allowOutsideClick: false, didOpen: () => { const b = Swal.getHtmlContainer().querySelector('b'); timerInterval = setInterval(() => { b.textContent = Math.ceil(Swal.getTimerLeft() / 1000); }, 100); }, willClose: () => { clearInterval(timerInterval); } }).then((result) => { if (result.isConfirmed) { resetInactivityTimer(); } else if (result.dismiss === Swal.DismissReason.timer) { handleLogout({ preventDefault: () => {} }); } }); }
-            function resetInactivityTimer() { clearTimeout(inactivityTimer); Swal.close(); inactivityTimer = setTimeout(showInactivityWarning, WARNING_TIME); }
-            function setupInactivityListeners() { ['mousemove', 'mousedown', 'keypress', 'scroll'].forEach(event => document.addEventListener(event, resetInactivityTimer, true)); }
-            function clearInactivityListeners() { clearTimeout(inactivityTimer); ['mousemove', 'mousedown', 'keypress', 'scroll'].forEach(event => document.removeEventListener(event, resetInactivityTimer, true)); }
+            elements.logsMenu.style.display = user.role === 'Admin' ? 'flex' : 'none';
+            elements.usersMenu.style.display = user.role === 'Admin' ? 'flex' : 'none';
+            elements.addDashboardBtn.style.display = user.canAdd ? 'block' : 'none';
+            elements.addContractsBtn.style.display = user.canAdd ? 'block' : 'none';
+        },
+        showNotificationPopup: () => {
+            if (!CONFIG.contracts || CONFIG.contracts.length === 0) return;
+            const expiring = CONFIG.contracts.filter(c => getContractStatus(c.endDate) === 'expiring').length;
+            const expired = CONFIG.contracts.filter(c => getContractStatus(c.endDate) === 'expired').length;
+            if (expiring > 0 || expired > 0) {
+                let html = '<div class="text-left">';
+                if (expired > 0) html += `<p class="mb-2"><i class="fas fa-times-circle text-red-500 mr-2"></i>สัญญาหมดอายุ: <strong>${expired}</strong> รายการ</p>`;
+                if (expiring > 0) html += `<p><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>สัญญาใกล้หมดอายุ: <strong>${expiring}</strong> รายการ</p>`;
+                Swal.fire({ title: 'แจ้งเตือนสัญญา', html: html + '</div>', icon: 'warning', confirmButtonColor: '#26A69A' });
+            }
+        }
+    };
+    
+    const format = {
+        currency: amount => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0 }).format(amount || 0),
+        date: dateString => { try { return new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return ''; } }
+    };
+    const getContractStatus = endDate => { const d = Math.ceil((new Date(endDate) - new Date()) / 864e5); return d < 1 ? 'expired' : (d <= 60 ? 'expiring' : 'active'); };
+    const getDaysRemaining = endDate => Math.ceil((new Date(endDate) - new Date()) / 864e5);
+    const getStatusBadge = status => ({ active: '<span class="badge badge-active">ยังไม่ครบกำหนด</span>', expiring: '<span class="badge badge-expiring">ใกล้หมดอายุ</span>', expired: '<span class="badge badge-expired">หมดอายุแล้ว</span>' })[status] || '';
+
+    // --- START: ‼️ แก้ไข (ฟังก์ชัน Login) ‼️ ---
+    async function login(username, password) {
+        const loginButton = document.querySelector('#loginForm button[type="submit"]');
+        
+        const originalContent = loginButton.innerHTML; // 1. เก็บเนื้อหาเดิม
+        loginButton.disabled = true;
+        
+        // 2. กำหนดความสูงคงที่ + จัดกลาง
+        loginButton.style.height = `${loginButton.offsetHeight}px`; 
+        loginButton.classList.add('flex', 'items-center', 'justify-center');
+
+        // 3. ใส่ Loader (อนิเมชั่นเหรียญ)
+        loginButton.innerHTML = `<span class="loader"></span>`;
+
+        try {
+            const { user } = await api.authenticateUser(username, password);
+            CONFIG.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
             
-            // Google Apps Script Communication
-            function fetchDataFromGAS(action, params = {}) {
-                params.action = action;
-                params.userEmail = currentUser ? currentUser.email : 'ANONYMOUS';
-                const queryString = new URLSearchParams(params).toString();
+            document.getElementById('currentUserDisplayHeader').textContent = user.name || user.username;
+            document.getElementById('currentUserRoleHeader').textContent = user.role || 'User';
+            
+            UI.updateVisibility();
+            UI.showToast('เข้าสู่ระบบสำเร็จ!');
+            await loadDashboard();
+        } catch (error) { 
+            UI.showToast(error.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+        } finally { 
+            // คืนค่าปุ่มให้กลับมาคลิกได้ (กรณี Login ล้มเหลว)
+            loginButton.disabled = false;
+            loginButton.style.height = null; // 4. ลบความสูงคงที่
+            loginButton.classList.remove('flex', 'items-center', 'justify-center'); // 5. ลบคลาสจัดกลาง
+            loginButton.innerHTML = originalContent; // 6. คืนค่าเนื้อหาเดิม
+        }
+    }
+    // --- END: ‼️ แก้ไข (ฟังก์ชัน Login) ‼️ ---
+
+    function logout() {
+        Swal.fire({ title: 'ออกจากระบบ?', text: 'คุณต้องการออกจากระบบใช่หรือไม่?', icon: 'question', showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก' }).then(result => {
+            if (result.isConfirmed) { localStorage.removeItem('currentUser'); window.location.reload(); }
+        });
+    }
+
+    function updateNotificationBell() {
+        if(!CONFIG.contracts) return;
+        const notifications = CONFIG.contracts.filter(c => getContractStatus(c.endDate) !== 'active');
+        const badge = document.getElementById('notificationBadge');
+        if (notifications.length > 0) {
+            badge.textContent = notifications.length;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+        return notifications;
+    }
+    function loadNotificationDropdown() {
+        const notifications = updateNotificationBell();
+        const content = document.getElementById('notificationDropdownContent');
+        if(!notifications) {
+            content.innerHTML = '<p class="text-center text-gray-500 py-4">ไม่มีการแจ้งเตือน</p>';
+            return;
+        }
+        content.innerHTML = notifications.length === 0 ? '<p class="text-center text-gray-500 py-4">ไม่มีการแจ้งเตือน</p>' : 
+            notifications.slice(0, 5).map(c => {
+                const status = getContractStatus(c.endDate);
+                const icon = status === 'expired' ? 'fa-times-circle text-red-500' : 'fa-exclamation-triangle text-yellow-500';
+                return `<div class="p-3 mb-2 rounded-lg ${status === 'expired' ? 'bg-red-50' : 'bg-yellow-50'}"><div class="flex items-start space-x-2">
+                    <i class="fas ${icon} mt-1"></i>
+                    <div><p class="font-semibold text-sm">${c.name}</p><p class="text-xs text-gray-600">${c.branchId} | เหลือ ${getDaysRemaining(c.endDate)} วัน</p></div>
+                </div></div>`;
+            }).join('');
+    }
+    
+    async function loadDashboard() {
+        UI.showLoading();
+        try {
+            const [{ data: contracts }, { data: branches }] = await Promise.all([api.getContracts(), api.getBranches()]);
+            CONFIG.contracts = contracts; CONFIG.branches = branches;
+            const statusCounts = contracts.reduce((acc, c) => { acc[getContractStatus(c.endDate)] = (acc[getContractStatus(c.endDate)] || 0) + 1; return acc; }, { active: 0, expiring: 0, expired: 0 });
+            document.getElementById('totalBranches').textContent = new Set(contracts.map(c => c.branchId)).size;
+            document.getElementById('activeContracts').textContent = statusCounts.active;
+            document.getElementById('expiringContracts').textContent = statusCounts.expiring;
+            document.getElementById('expiredContracts').textContent = statusCounts.expired;
+            document.getElementById('totalRent').textContent = format.currency(contracts.reduce((sum, c) => sum + c.monthlyRent, 0));
+            const expiringList = contracts.filter(c => getContractStatus(c.endDate) !== 'active').sort((a, b) => getDaysRemaining(a.endDate) - getDaysRemaining(b.endDate)).slice(0, 5);
+            document.getElementById('expiringContractsTable').innerHTML = expiringList.length ? expiringList.map(c => `<tr><td>${c.branchId}</td><td>${c.name}</td><td>${format.date(c.endDate)}</td><td>${getDaysRemaining(c.endDate)} วัน</td><td>${getStatusBadge(getContractStatus(c.endDate))}</td></tr>`).join('') : `<tr><td colspan="5" class="text-center text-gray-500">ไม่มีสัญญาที่ใกล้หมดอายุ</td></tr>`;
+            if (CONFIG.statusChart) CONFIG.statusChart.destroy();
+            CONFIG.statusChart = new Chart(document.getElementById('statusChart'), { type: 'doughnut', data: { labels: ['ยังไม่ครบกำหนด', 'ใกล้หมดอายุ (60 วัน)', 'หมดอายุแล้ว'], datasets: [{ data: [statusCounts.active, statusCounts.expiring, statusCounts.expired], backgroundColor: ['#4DB6AC', '#FFA726', '#EF5350'], borderWidth: 0 }] }, options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'Kanit' } } } } } });
+            const districtData = contracts.reduce((acc, c) => { acc[c.district] = (acc[c.district] || 0) + c.monthlyRent; return acc; }, {});
+            const sortedDistricts = Object.keys(districtData).sort();
+            if (CONFIG.regionChart) CONFIG.regionChart.destroy();
+            CONFIG.regionChart = new Chart(document.getElementById('regionChart'), { type: 'bar', data: { labels: sortedDistricts, datasets: [{ label: 'ค่าเช่า', data: sortedDistricts.map(d => districtData[d]), backgroundColor: '#26A69A' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: value => format.currency(value) } } } } });
+            updateNotificationBell();
+            setTimeout(UI.showNotificationPopup, 1000);
+        } catch (error) { UI.showToast(`โหลด Dashboard ไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            UI.hideLoading(); 
+            document.getElementById('dashboardPage').classList.add('animate-page-load');
+        }
+    }
+    
+    async function loadContractsPage() {
+        const tableLoader = document.getElementById('tableLoadingOverlay');
+        tableLoader.classList.replace('hidden', 'flex'); 
+        try {
+            const { data: contracts } = await api.getContracts();
+            CONFIG.contracts = contracts;
+            const uniqueDistricts = [...new Set(contracts.map(item => item.district))].sort();
+            const uniqueBranches = [...new Set(contracts.map(item => item.branchId))].sort();
+            document.getElementById('district-list').innerHTML = uniqueDistricts.map(o => `<option value="${o}"></option>`).join('');
+            document.getElementById('branch-list').innerHTML = uniqueBranches.map(o => `<option value="${o}"></option>`).join('');
+            renderContractsTable(contracts);
+        } catch (error) { UI.showToast(`โหลดสัญญาไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            tableLoader.classList.replace('flex', 'hidden'); 
+            document.getElementById('contractsPage').classList.add('animate-page-load');
+        }
+    }
+    
+    async function loadLogsPage() {
+        const tableLoader = document.getElementById('logsTableLoadingOverlay');
+        tableLoader.classList.replace('hidden', 'flex'); 
+        try {
+            const { data: logs } = await api.getLogs();
+            CONFIG.logs = logs;
+            renderLogsTable(logs);
+        } catch (error) { UI.showToast(`โหลด Logs ไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            tableLoader.classList.replace('flex', 'hidden'); 
+            document.getElementById('logsPage').classList.add('animate-page-load');
+        }
+    }
+    
+    async function loadUsersPage() {
+        const tableLoader = document.getElementById('usersTableLoadingOverlay');
+        tableLoader.classList.replace('hidden', 'flex'); 
+        try {
+            const { data: users } = await api.getUsers(); 
+            CONFIG.users = users; 
+            renderUsersTable(users); 
+        } catch (error) { UI.showToast(`โหลดผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            tableLoader.classList.replace('flex', 'hidden'); 
+            document.getElementById('usersPage').classList.add('animate-page-load');
+        }
+    }
+    
+    async function loadReportsPage() {
+        UI.showLoading();
+        try {
+            const contracts = CONFIG.contracts.length === 0 ? (await api.getContracts()).data : CONFIG.contracts;
+            const active = contracts.filter(c => getContractStatus(c.endDate) === 'active');
+            const expiring = contracts.filter(c => getContractStatus(c.endDate) === 'expiring');
+            const expired = contracts.filter(c => getContractStatus(c.endDate) === 'expired');
+            const sumRent = arr => arr.reduce((sum, c) => sum + (c.monthlyRent || 0), 0);
+            document.getElementById('reportActive').textContent = active.length;
+            document.getElementById('reportExpiring').textContent = expiring.length;
+            document.getElementById('reportExpired').textContent = expired.length;
+            document.getElementById('reportActiveRent').textContent = format.currency(sumRent(active));
+            document.getElementById('reportExpiringRent').textContent = format.currency(sumRent(expiring));
+            document.getElementById('reportExpiredRent').textContent = format.currency(sumRent(expired));
+            document.getElementById('reportTotalRent').textContent = format.currency(sumRent(contracts));
+            document.getElementById('reportBranchCount').textContent = new Set(contracts.map(c => c.branchId)).size;
+        } catch (error) { UI.showToast(`โหลดรายงานไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            UI.hideLoading(); 
+            document.getElementById('reportsPage').classList.add('animate-page-load');
+        }
+    }
+    async function loadNotificationsPage() {
+        UI.showLoading();
+        try {
+            const contracts = CONFIG.contracts.length === 0 ? (await api.getContracts()).data : CONFIG.contracts;
+            const notifications = contracts.filter(c => getContractStatus(c.endDate) !== 'active').sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+            const container = document.getElementById('notificationsList');
+            container.innerHTML = notifications.length ? notifications.map(c => {
+                const status = getContractStatus(c.endDate);
+                return `<div class="bg-white rounded-2xl shadow-md p-6 border-l-4 ${status === 'expired' ? 'border-red-500' : 'border-yellow-500'}">
+                <div class="flex items-start space-x-4"><i class="fas ${status === 'expired' ? 'fa-times-circle text-red-500' : 'fa-exclamation-triangle text-yellow-500'} text-3xl mt-1"></i>
+                <div class="flex-1"><h3 class="text-lg font-bold">${c.name}</h3>
+                <p class="text-gray-600">รหัสสาขา: ${c.branchId} | เขต: ${c.district}</p>
+                <p class="text-gray-600">วันสิ้นสุด: ${format.date(c.endDate)} | คงเหลือ: <strong>${getDaysRemaining(c.endDate)} วัน</strong></p>
+                <p class="font-semibold">ค่าเช่า: ${format.currency(c.monthlyRent)}/เดือน</p>
+                </div><div>${getStatusBadge(status)}</div></div></div>`;
+            }).join('') : '<div class="bg-white rounded-2xl shadow-md p-6 text-center text-gray-500">ไม่มีการแจ้งเตือน</div>';
+        } catch (error) { UI.showToast(`โหลดแจ้งเตือนไม่สำเร็จ: ${error.message}`, 'error'); }
+        finally { 
+            UI.hideLoading(); 
+            document.getElementById('notificationsPage').classList.add('animate-page-load');
+        }
+    }
+
+    async function viewContractFiles(id) {
+        const contract = CONFIG.contracts.find(c => c.id === id);
+        if (!contract || !contract.contractFilesData || contract.contractFilesData.length === 0) {
+            UI.showToast('ไม่พบไฟล์สำหรับสัญญานี้', 'error');
+            return;
+        }
+
+        const fileLinks = contract.contractFilesData.map((file, index) => {
+            return `
+                <a href="${file.viewUrl}" target="_blank" class="block w-full text-left p-3 mb-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-200">
+                    <i class="fas fa-file-image text-teal-500 mr-2"></i> 
+                    ไฟล์ที่ ${index + 1} (คลิกเพื่อดู)
+                </a>
+            `;
+        }).join('');
+
+        Swal.fire({
+            title: `ไฟล์สัญญาของ ${contract.name}`,
+            html: `
+                <p class="mb-4 text-sm text-gray-600">รหัสสาขา: ${contract.branchId}</p>
+                <div class="max-h-60 overflow-y-auto text-left">
+                    ${fileLinks}
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'ปิด',
+            confirmButtonColor: '#26A69A'
+        });
+    }
+
+    function renderContractsTable(contracts) {
+        const tableBody = document.getElementById('contractsTable');
+        tableBody.innerHTML = contracts.length === 0 ? '<tr><td colspan="10" class="text-center text-gray-500">ไม่มีข้อมูลสัญญา</td></tr>' :
+            contracts.map(c => {
                 
-                return fetch(`${SCRIPT_URL}?${queryString}`)
-                    .then(response => {
-                        if (!response.ok) { throw new Error(`Network response was not ok: ${response.statusText}`); }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) { return data.data; } 
-                        else { throw new Error(data.message || 'An unknown error occurred.'); }
+                let actions = '';
+
+                if (c.contractFilesData && c.contractFilesData.length > 0) {
+                    actions += `<button onclick="viewContractFiles('${c.id}')" class="text-green-600 hover:text-green-800 mr-2" title="ดูไฟล์"><i class="fas fa-eye"></i></button>`;
+                } else {
+                    actions += `<span class="text-gray-400 mr-2" title="ไม่มีไฟล์"><i class="fas fa-eye-slash"></i></span>`;
+                }
+                if (CONFIG.currentUser.canEdit) {
+                    actions += `<button onclick="editContract('${c.id}')" class="text-blue-600 hover:text-blue-800 mr-2" title="แก้ไข"><i class="fas fa-edit"></i></button>`;
+                }
+                if (CONFIG.currentUser.canDelete) {
+                    actions += `<button onclick="deleteContract('${c.id}')" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>`;
+                }
+
+                return `<tr><td>${c.branchId}</td><td>${c.name}</td><td>${c.regional}</td><td>${c.district}</td><td class="text-center">${c.unitCount}</td><td>${format.date(c.startDate)}</td><td>${format.date(c.endDate)}</td><td>${format.currency(c.monthlyRent)}</td><td>${getStatusBadge(getContractStatus(c.endDate))}</td><td>${actions || 'ไม่มีสิทธิ์'}</td></tr>`;
+            }).join('');
+    }
+    
+    function renderLogsTable(logs) {
+        const tableBody = document.getElementById('logsTable');
+        tableBody.innerHTML = logs.length ? 
+            logs.map(log => `<tr><td>${log.timestamp ? new Date(log.timestamp).toLocaleString('th-TH') : ''}</td><td>${log.user}</td><td>${log.activity}</td><td>${log.details}</td></tr>`).join('') : 
+            `<tr><td colspan="4" class="text-center text-gray-500">ไม่พบข้อมูล Log ในช่วงเวลาที่เลือก</td></tr>`;
+    }
+
+    function renderUsersTable(users) {
+        document.getElementById('usersTable').innerHTML = users.length ? users.map(user => `<tr>
+            <td>${user.username}</td><td>${user.name}</td><td>${user.role}</td><td>${user.permissionArea}</td>
+            <td class="text-center">${user.canAdd ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>'}</td>
+            <td class="text-center">${user.canEdit ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>'}</td>
+            <td class="text-center">${user.canDelete ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>'}</td>
+            <td><button onclick="editUser('${user.username}')" class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteUser('${user.username}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('') : `<tr><td colspan="8" class="text-center text-gray-500">ไม่พบข้อมูลผู้ใช้</td></tr>`;
+    }
+
+    function filterUsers() {
+        const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+        if (!CONFIG.users) return;
+        
+        const filtered = CONFIG.users.filter(user => 
+            (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+            (user.username && user.username.toLowerCase().includes(searchTerm))
+        );
+        renderUsersTable(filtered);
+    }
+
+    function filterContracts() {
+        const filters = {
+            district: document.getElementById('filterDistrict').value.toLowerCase(),
+            branch: document.getElementById('filterBranch').value.toLowerCase(),
+            status: document.getElementById('filterStatus').value
+        };
+        const filtered = CONFIG.contracts.filter(c => 
+            (!filters.district || c.district.toLowerCase().includes(filters.district)) &&
+            (!filters.branch || c.branchId.toLowerCase().includes(filters.branch)) &&
+            (!filters.status || getContractStatus(c.endDate) === filters.status)
+        );
+        renderContractsTable(filtered);
+    }
+    function filterLogs() {
+        const startDateValue = document.getElementById('logStartDate').value;
+        const endDateValue = document.getElementById('logEndDate').value;
+        const filteredLogs = CONFIG.logs.filter(log => {
+            if (!log.timestamp) return false;
+            const logDate = new Date(log.timestamp);
+            const start = startDateValue ? new Date(startDateValue) : null;
+            const end = endDateValue ? new Date(endDateValue) : null;
+            if (start && logDate < start) return false;
+            if (end && logDate > end) return false;
+            return true;
+        });
+        renderLogsTable(filteredLogs);
+    }
+    function resetLogFilter() {
+        document.getElementById('logStartDate').value = '';
+        document.getElementById('logEndDate').value = '';
+        renderLogsTable(CONFIG.logs);
+    }
+    function editContract(id) {
+        const contract = CONFIG.contracts.find(c => c.id === id); if (!contract) return;
+        fileManager.resetEdit();
+        fileManager.edit.existing = [...contract.contractFilesData];
+        
+        const form = document.getElementById('editContractForm');
+        form.id.value = contract.id; form.branchId.value = contract.branchId; form.name.value = contract.name;
+        form.regional.value = contract.regional; form.district.value = contract.district; 
+        form.unitCount.value = contract.unitCount; 
+        form.startDate.value = contract.startDate; form.endDate.value = contract.endDate; form.monthlyRent.value = contract.monthlyRent;
+        
+        renderFilePreviews('edit');
+        document.getElementById('editModal').classList.add('active');
+    }
+    async function deleteContract(id) {
+        const contract = CONFIG.contracts.find(c => c.id === id); if (!contract) return;
+        const result = await Swal.fire({ title: 'ยืนยันการลบ', text: `คุณต้องการลบสัญญาของ ${contract.name} ใช่หรือไม่?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#d33', cancelButtonColor: '#6c757d' });
+        if (result.isConfirmed) {
+            UI.showLoading();
+            try { 
+                await api.deleteContract(id); 
+                UI.showToast('ลบสัญญาสำเร็จ!'); 
+                await loadContractsPage(); 
+            } catch (error) { UI.showToast(`ลบไม่สำเร็จ: ${error.message}`, 'error');
+            } finally { UI.hideLoading(); }
+        }
+    }
+    function editUser(username) {
+        const user = CONFIG.users.find(u => u.username === username); if (!user) return;
+        const form = document.getElementById('editUserForm');
+        form.originalUsername.value = user.username; form.username.value = user.username; form.name.value = user.name;
+        form.role.value = user.role; form.permissionArea.value = user.permissionArea;
+        form.canAdd.checked = user.canAdd; form.canEdit.checked = user.canEdit; form.canDelete.checked = user.canDelete;
+        document.getElementById('editUserModal').classList.add('active');
+    }
+    async function deleteUser(username) {
+        if (CONFIG.currentUser.username === username) { UI.showToast('ไม่สามารถลบตัวเองได้', 'error'); return; }
+        const user = CONFIG.users.find(u => u.username === username); if (!user) return;
+        const result = await Swal.fire({ title: 'ยืนยันการลบ', text: `คุณต้องการลบผู้ใช้ ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#d33', cancelButtonColor: '#6c757d' });
+        if (result.isConfirmed) {
+            UI.showLoading();
+            try { 
+                await api.deleteUser(username); 
+                UI.showToast('ลบผู้ใช้สำเร็จ!'); 
+                await loadUsersPage(); 
+            } catch (error) { UI.showToast(`ลบไม่สำเร็จ: ${error.message}`, 'error'); 
+            } finally { UI.hideLoading(); }
+        }
+    }
+
+    const pageLoaders = { 
+        dashboard: loadDashboard, 
+        contracts: loadContractsPage, 
+        logs: loadLogsPage, 
+        users: loadUsersPage, 
+        reports: loadReportsPage, 
+        notifications: loadNotificationsPage 
+    };
+
+    function getActivePage() {
+        const activePage = document.querySelector('.page-content:not(.hidden)');
+        return activePage ? activePage.id.replace('Page', '') : 'dashboard';
+    }
+
+    function navigateToPage(pageName) {
+        document.querySelectorAll('.page-content').forEach(p => {
+            p.classList.add('hidden');
+            p.classList.remove('animate-page-load');
+        });
+        document.querySelectorAll('.sidebar-menu-item').forEach(i => i.classList.remove('active'));
+        const targetPage = document.getElementById(`${pageName}Page`);
+        if (targetPage) {
+            if (pageName === 'addContract') {
+                document.getElementById('addContractForm').reset();
+                fileManager.resetAdd();
+                renderFilePreviews('add');
+            }
+            targetPage.classList.remove('hidden');
+            const targetMenuItem = document.querySelector(`[data-page="${pageName}"]`);
+            if(targetMenuItem) targetMenuItem.classList.add('active');
+            
+            if(pageLoaders[pageName]) pageLoaders[pageName]();
+        }
+    }
+    
+    function getFilesAsBase64(files) {
+        if (!files || files.length === 0) return Promise.resolve([]);
+        return Promise.all(Array.from(files).map(file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        })));
+    }
+
+    function renderFilePreviews(mode) {
+        const isAdd = mode === 'add';
+        const container = document.getElementById(isAdd ? 'addFilesPreviewsContainer' : 'editCurrentFilesContainer');
+        const newFileContainer = document.getElementById('editFilesPreviewsContainer');
+        const fileLabel = document.getElementById(isAdd ? 'addContractFileLabel' : 'editContractFileLabel');
+
+        container.innerHTML = '';
+        if (newFileContainer) newFileContainer.innerHTML = '';
+
+        let totalFiles = 0;
+        if (isAdd) {
+            totalFiles = fileManager.add.length;
+            fileManager.add.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    container.innerHTML += `<div class="file-preview-item"><img src="${e.target.result}" alt="preview"><button type="button" class="remove-file-btn" data-mode="add" data-index="${index}">&times;</button></div>`;
+                };
+                reader.readAsDataURL(file);
+            });
+        } else {
+            totalFiles = fileManager.edit.existing.length + fileManager.edit.new.length;
+            fileManager.edit.existing.forEach((file, index) => {
+                container.innerHTML += `<div class="file-preview-item"><a href="${file.viewUrl}" target="_blank"><img src="${file.viewUrl}" alt="existing file"></a><button type="button" class="remove-file-btn" data-mode="edit" data-type="existing" data-index="${index}">&times;</button></div>`;
+            });
+            fileManager.edit.new.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    newFileContainer.innerHTML += `<div class="file-preview-item"><img src="${e.target.result}" alt="preview"><button type="button" class="remove-file-btn" data-mode="edit" data-type="new" data-index="${index}">&times;</button></div>`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        fileLabel.style.display = totalFiles >= 5 ? 'none' : 'flex';
+        if (totalFiles < 5) {
+            fileLabel.querySelector('span').textContent = `เพิ่มไฟล์ (${totalFiles}/5)...`;
+        }
+    }
+    
+    function handleFileSelection(e, mode) {
+        const isAdd = mode === 'add';
+        const currentFiles = isAdd ? fileManager.add : fileManager.edit.new;
+        const existingFileCount = isAdd ? 0 : fileManager.edit.existing.length;
+        const files = Array.from(e.target.files);
+        const totalAfterAdd = currentFiles.length + existingFileCount + files.length;
+
+        if (totalAfterAdd > 5) {
+            UI.showToast(`เลือกไฟล์ได้สูงสุด 5 ไฟล์ (ปัจจุบันมี ${currentFiles.length + existingFileCount} ไฟล์)`, 'error');
+        } else {
+            currentFiles.push(...files);
+        }
+        e.target.value = '';
+        renderFilePreviews(mode);
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            CONFIG.currentUser = JSON.parse(savedUser);
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            document.getElementById('currentUserDisplayHeader').textContent = CONFIG.currentUser.name || CONFIG.currentUser.username;
+            document.getElementById('currentUserRoleHeader').textContent = CONFIG.currentUser.role || 'User';
+            
+            UI.updateVisibility();
+            loadDashboard();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); login(document.getElementById('username').value, document.getElementById('password').value); });
+        
+        document.getElementById('logoutBtn').addEventListener('click', e => { e.preventDefault(); logout(); });
+        document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); navigateToPage(el.getAttribute('data-page')); }));
+        
+        document.getElementById('notificationBell').addEventListener('click', () => { 
+            loadNotificationDropdown(); 
+            document.getElementById('notificationDropdown').classList.toggle('hidden');
+            document.getElementById('userDropdown').classList.add('hidden');
+        });
+        
+        document.getElementById('userMenuButton').addEventListener('click', () => {
+            document.getElementById('userDropdown').classList.toggle('hidden');
+            document.getElementById('notificationDropdown').classList.add('hidden');
+        });
+
+        document.getElementById('refreshDataBtn').addEventListener('click', () => {
+            const currentPageId = getActivePage();
+            if (pageLoaders[currentPageId]) {
+                UI.showToast('กำลังรีเฟรชข้อมูล...', 'success');
+                
+                const icon = document.querySelector('#refreshDataBtn i');
+                icon.classList.add('fa-spin'); 
+                
+                // --- START: ‼️ แก้ไข (รีเซ็ต Animation ก่อนโหลด) ‼️ ---
+                const currentPageElement = document.getElementById(`${currentPageId}Page`);
+                if (currentPageElement) {
+                    currentPageElement.classList.remove('animate-page-load');
+                }
+                // --- END: แก้ไข ---
+                
+                pageLoaders[currentPageId]()
+                    .finally(() => {
+                        setTimeout(() => {
+                            icon.classList.remove('fa-spin');
+                        }, 500);
                     });
             }
-
-            function postDataToGAS(action, payload) {
-                payload.userEmail = currentUser ? currentUser.email : 'ANONYMOUS';
-
-                return fetch(`${SCRIPT_URL}?action=${action}`, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8', },
-                })
-                .then(response => {
-                    if (!response.ok) { throw new Error(`Network response was not ok: ${response.statusText}`); }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) { return data.data; } 
-                    else { throw new Error(data.message || 'An unknown error occurred from POST.'); }
-                })
-                .catch(error => {
-                    console.error('Fetch Error:', error);
-                    throw new Error(`Network error during POST request: ${error.message}`);
-                });
-            }
-            
-            // Authentication & Session
-            function handleLogin() { const loginButton = document.getElementById('login-button'); const originalButtonText = loginButton.innerHTML; const email = document.getElementById('email').value; const password = document.getElementById('password').value; const loginError = document.getElementById('login-error'); loginError.classList.add('d-none'); if (!email || !password) { loginError.textContent = "กรุณากรอก Email และ Password"; loginError.classList.remove('d-none'); return; } loginButton.disabled = true; loginButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังตรวจสอบ...`; fetchDataFromGAS('loginUser', { email, password }).then(user => { currentUser = user; sessionStorage.setItem('currentUser', JSON.stringify(user)); showApp(); }).catch(error => { loginError.textContent = error.message; loginError.classList.remove('d-none'); }).finally(() => { loginButton.disabled = false; loginButton.innerHTML = originalButtonText; }); }
-            function handleLogout(e) { e.preventDefault(); currentUser = null; sessionStorage.removeItem('currentUser'); clearInactivityListeners(); loginPage.style.display = 'flex'; appWrapper.classList.add('d-none'); }
-            function checkSession() { const userJson = sessionStorage.getItem('currentUser'); if (userJson) { currentUser = JSON.parse(userJson); showApp(); } }
-
-            // UI & Page Management
-            function showPage(pageIdToShow) { pages.forEach(page => page.classList.remove('active')); const activePage = document.getElementById(pageIdToShow); if (activePage) { activePage.classList.add('active'); loadDataForPage(pageIdToShow); } }
-            function showApp() { loginPage.style.display = 'none'; appWrapper.classList.remove('d-none'); document.getElementById('user-display-name').textContent = currentUser.name; document.getElementById('user-display-role').textContent = currentUser.role; updateUIForRole(); showPage('dashboard-content'); setupInactivityListeners(); resetInactivityTimer(); }
-            function updateUIForRole() { document.querySelectorAll('.admin-only, .writable-only').forEach(el => el.classList.add('d-none')); if (currentUser.role === 'Admin') { document.querySelectorAll('.admin-only, .writable-only').forEach(el => el.classList.remove('d-none')); } else if (currentUser.role === 'Regional Manager' || currentUser.role === 'District Manager') { document.querySelectorAll('.writable-only').forEach(el => el.classList.remove('d-none')); } let subtitle = 'ภาพรวมข้อมูลสัญญาเช่า'; if (currentUser.role !== 'Admin') { subtitle += ` (เขต/ภาค: ${currentUser.permissionArea})`; } document.getElementById('dashboard-subtitle').textContent = subtitle; }
-            
-            function navigateToContractsAndFilter(filterValue) { initialContractFilter = filterValue; document.querySelector('a.nav-link[href="#contracts"]').click(); }
-            
-            // Data Loading & Rendering
-            function loadDataForPage(pageId) { switch (pageId) { case 'dashboard-content': loadDashboardData(); break; case 'contracts-content': loadContractsData(); break; case 'users-content': if (currentUser.role === 'Admin') loadUsersData(); break; case 'logs-content': if (currentUser.role === 'Admin') loadLogsData(); break; } }
-            function getStatus(endDateStr) { if (!endDateStr) return { text: 'N/A', class: '' }; const endDate = new Date(endDateStr); const now = new Date(); const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)); if (diffDays < 0) return { text: 'หมดอายุแล้ว', class: 'status-expired' }; if (diffDays <= 90) return { text: 'ใกล้หมดอายุ', class: 'status-warning' }; return { text: 'ปกติ', class: 'status-normal' }; }
-            function formatThaiDate(dateString) { if (!dateString || typeof dateString !== 'string') return ""; const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]; const date = new Date(dateString); if (isNaN(date.getTime())) return dateString; return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${date.getFullYear() + 543}`; }
-            function loadDashboardData() { const attentionListEl = document.getElementById('attention-list'); attentionListEl.innerHTML = createTableLoader(5); setCardPlaceholders(true); fetchDataFromGAS('getContracts', { role: currentUser.role, permissionArea: currentUser.permissionArea }).then(contracts => { setCardPlaceholders(false); document.getElementById('total-contracts-card').textContent = contracts.length; document.getElementById('expiring-contracts-card').textContent = contracts.filter(c => getStatus(c.endDate).class === 'status-warning').length; document.getElementById('expired-contracts-card').textContent = contracts.filter(c => getStatus(c.endDate).class === 'status-expired').length; const totalRent = contracts.reduce((sum, c) => sum + (parseFloat(c.monthlyRent) || 0), 0); document.getElementById('total-rent-card').textContent = `฿${totalRent.toLocaleString()}`; attentionListEl.innerHTML = ''; const attentionContracts = contracts.filter(c => getStatus(c.endDate).class !== 'status-normal').sort((a, b) => new Date(a.endDate) - new Date(b.endDate)); if (attentionContracts.length > 0) { attentionContracts.forEach(c => { const status = getStatus(c.endDate); const rent = parseFloat(c.monthlyRent) || 0; attentionListEl.innerHTML += `<tr><td>${c.name}</td><td>${c.district}</td><td>${formatThaiDate(c.endDate)}</td><td><span class="status-badge ${status.class}">${status.text}</span></td><td class="text-end">฿${rent.toLocaleString()}</td></tr>`; }); } else { attentionListEl.innerHTML = `<tr><td colspan="5" class="text-center text-muted">ไม่พบสัญญาที่ต้องให้ความสนใจ</td></tr>`; } }).catch(error => { setCardPlaceholders(false); showErrorAlert(`เกิดข้อผิดพลาดในการโหลดข้อมูลแดชบอร์ด: ${error.message}`); attentionListEl.innerHTML = `<tr><td colspan="5" class="text-center text-danger">โหลดข้อมูลล้มเหลว</td></tr>`; }); }
-            function loadContractsData() { const tableBody = document.getElementById('contracts-table-body'); tableBody.innerHTML = createTableLoader(10); fetchDataFromGAS('getContracts', { role: currentUser.role, permissionArea: currentUser.permissionArea }).then(contracts => { allContracts = contracts; if (initialContractFilter !== null) { document.getElementById('contract-status-filter').value = initialContractFilter; initialContractFilter = null; } applyContractFilters(); }).catch(error => tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">เกิดข้อผิดพลาด: ${error.message}</td></tr>`); }
-            function loadUsersData() { const tableBody = document.getElementById('users-table-body'); tableBody.innerHTML = createTableLoader(5); fetchDataFromGAS('getUsers').then(users => { allUsers = users; applyUserFilters(); }).catch(error => tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">เกิดข้อผิดพลาด: ${error.message}</td></tr>`); }
-            function loadLogsData() { const tableBody = document.getElementById('logs-table-body'); tableBody.innerHTML = createTableLoader(4); fetchDataFromGAS('getActivityLog').then(logs => { allLogs = logs; applyLogFilters(); }).catch(error => tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">เกิดข้อผิดพลาด: ${error.message}</td></tr>`); }
-            
-            function renderContractsTable(contracts) { 
-                const sortedContracts = [...contracts].sort((a, b) => { let valA = a[contractSort.key], valB = b[contractSort.key]; if (contractSort.key === 'startDate' || contractSort.key === 'endDate') { valA = new Date(valA); valB = new Date(valB); } else if (contractSort.key === 'monthlyRent') { valA = parseFloat(a[contractSort.key] || 0); valB = parseFloat(b[contractSort.key] || 0); } if (valA < valB) return contractSort.order === 'asc' ? -1 : 1; if (valA > valB) return contractSort.order === 'asc' ? 1 : -1; return 0; }); 
-                const tableBody = document.getElementById('contracts-table-body'); 
-                tableBody.innerHTML = ''; 
-                if (sortedContracts.length === 0) { tableBody.innerHTML = '<tr><td colspan="10" class="text-center">ไม่พบข้อมูล</td></tr>'; return; } 
-                const canWrite = currentUser.role !== 'Employee'; 
-                const canDelete = currentUser.role === 'Admin'; 
-                sortedContracts.forEach(c => { 
-                    const status = getStatus(c.endDate); 
-                    const rent = parseFloat(c.monthlyRent) || 0;
-                    const actionButtons = `<td class="text-end"> <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-contract" data-branch-id="${c.branchId}" title="แก้ไข"><i class="material-icons" style="pointer-events: none;">edit</i></button> ${canDelete ? `<button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-contract" data-branch-id="${c.branchId}" title="ลบ"><i class="material-icons" style="pointer-events: none;">delete</i></button>` : ''} </td>`; 
-                    
-                    let viewFilesCell = '<td></td>';
-                    if (c.File_URLs && c.File_URLs.trim() !== '') {
-                        viewFilesCell = `<td class="text-center"><button class="btn btn-sm btn-outline-info py-0 px-1 btn-view-files" title="ดูไฟล์แนบ" data-file-urls="${c.File_URLs}"><i class="material-icons" style="pointer-events: none;">visibility</i></button></td>`;
-                    }
-
-                    const row = `<tr>
-                        <td>${c.branchId||''}</td>
-                        <td>${c.name||''}</td>
-                        <td>${c.district||''}</td>
-                        <td class="text-center">${c.unitCount || '-'}</td>
-                        <td class="text-center">฿${rent.toLocaleString()}</td>
-                        <td>${formatThaiDate(c.startDate)}</td>
-                        <td>${formatThaiDate(c.endDate)}</td>
-                        <td><span class="status-badge ${status.class}">${status.text}</span></td>
-                        ${viewFilesCell} 
-                        ${canWrite ? actionButtons : '<td></td>'}
-                    </tr>`; 
-                    tableBody.insertAdjacentHTML('beforeend', row); 
-                }); 
-            }
-
-            function renderUsersTable(users) { 
-                const sortedUsers = [...users].sort((a, b) => { const valA = a[userSort.key] ? a[userSort.key].toLowerCase() : ''; const valB = b[userSort.key] ? b[userSort.key].toLowerCase() : ''; if (valA < valB) return userSort.order === 'asc' ? -1 : 1; if (valA > valB) return userSort.order === 'asc' ? 1 : -1; return 0; }); 
-                const tableBody = document.getElementById('users-table-body'); 
-                tableBody.innerHTML = ''; 
-                if (sortedUsers.length === 0) { tableBody.innerHTML = '<tr><td colspan="5" class="text-center">ไม่พบข้อมูล</td></tr>'; return; } 
-                sortedUsers.forEach(u => { 
-                    const actionButtons = `<td class="text-end"> <button class="btn btn-sm btn-outline-primary py-0 px-1 btn-edit-user" data-user-email="${u.email}" title="แก้ไข"><i class="material-icons" style="pointer-events: none;">manage_accounts</i></button> <button class="btn btn-sm btn-outline-danger py-0 px-1 btn-delete-user" data-user-email="${u.email}" title="ลบ"><i class="material-icons" style="pointer-events: none;">delete_forever</i></button> </td>`; 
-                    const row = `<tr><td>${u.email}</td><td>${u.name}</td><td>${u.role}</td><td>${u.permissionArea}</td>${actionButtons}</tr>`; 
-                    tableBody.insertAdjacentHTML('beforeend', row); 
-                }); 
-            }
-            
-            function renderLogsTable(logs) { const sortedLogs = [...logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); const tableBody = document.getElementById('logs-table-body'); tableBody.innerHTML = ''; if (sortedLogs.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="text-center">ไม่พบข้อมูล</td></tr>'; return; } sortedLogs.forEach(log => { const formattedTimestamp = new Date(log.timestamp).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'medium' }); const row = `<tr><td>${formattedTimestamp}</td><td>${log.user}</td><td>${log.activity}</td><td>${log.details}</td></tr>`; tableBody.insertAdjacentHTML('beforeend', row); }); }
-            
-            // Filtering and Sorting
-            function applyContractFilters() { const searchTerm = document.getElementById('contract-search-input').value.toLowerCase(); const statusFilter = document.getElementById('contract-status-filter').value; const startDate = document.getElementById('contract-start-date').value; const endDate = document.getElementById('contract-end-date').value; let filteredContracts = allContracts.filter(c => { const matchesSearch = !searchTerm || (c.branchId && c.branchId.toLowerCase().includes(searchTerm)) || (c.name && c.name.toLowerCase().includes(searchTerm)) || (c.district && c.district.toLowerCase().includes(searchTerm)); const matchesStatus = !statusFilter || getStatus(c.endDate).class === statusFilter; const contractEndDate = c.endDate ? new Date(c.endDate) : null; const matchesStartDate = !startDate || (contractEndDate && contractEndDate >= new Date(startDate)); const matchesEndDate = !endDate || (contractEndDate && contractEndDate <= new Date(endDate)); return matchesSearch && matchesStatus && matchesStartDate && matchesEndDate; }); renderContractsTable(filteredContracts); }
-            function applyUserFilters() { const searchTerm = document.getElementById('user-search-input').value.toLowerCase(); const roleFilter = document.getElementById('user-role-filter').value; let filteredUsers = allUsers.filter(u => (!searchTerm || (u.email && u.email.toLowerCase().includes(searchTerm)) || (u.name && u.name.toLowerCase().includes(searchTerm))) && (!roleFilter || u.role === roleFilter)); renderUsersTable(filteredUsers); }
-            function applyLogFilters() { const searchTerm = document.getElementById('log-search-input').value.toLowerCase(); const startDate = document.getElementById('log-start-date').value; const endDate = document.getElementById('log-end-date').value; const startDateTime = startDate ? new Date(startDate).setHours(0,0,0,0) : 0; const endDateTime = endDate ? new Date(endDate).setHours(23,59,59,999) : Infinity; let filteredLogs = allLogs.filter(log => { const logTime = new Date(log.timestamp).getTime(); return (!searchTerm || (log.user && log.user.toLowerCase().includes(searchTerm)) || (log.activity && log.activity.toLowerCase().includes(searchTerm)) || (log.details && log.details.toLowerCase().includes(searchTerm))) && (logTime >= startDateTime && logTime <= endDateTime); }); renderLogsTable(filteredLogs); }
-            function handleSort(event, page) { const header = event.target.closest('.sortable'); if (!header) return; const newKey = header.dataset.sort; let sortState, renderFunction, contentId; if (page === 'contract') { sortState = contractSort; renderFunction = applyContractFilters; contentId = '#contracts-content'; } else if (page === 'user') { sortState = userSort; renderFunction = applyUserFilters; contentId = '#users-content'; } else { return; } if (sortState.key === newKey) { sortState.order = sortState.order === 'asc' ? 'desc' : 'asc'; } else { sortState.key = newKey; sortState.order = 'asc'; } document.querySelectorAll(`${contentId} .sortable`).forEach(th => { th.classList.remove('asc', 'desc'); th.querySelector('.sort-icon').textContent = 'unfold_more'; }); header.classList.add(sortState.order); header.querySelector('.sort-icon').textContent = sortState.order === 'asc' ? 'expand_less' : 'expand_more'; renderFunction(); }
-
-            // File Upload UI Functions
-            function updateFileUploadUI() { const listContainer = document.getElementById('file-upload-list'); const addButtonContainer = document.getElementById('add-file-container'); const fileCount = listContainer.querySelectorAll('.file-upload-item').length; addButtonContainer.innerHTML = ''; if (fileCount < MAX_FILES) { const addButton = document.createElement('button'); addButton.type = 'button'; addButton.className = 'btn btn-primary'; addButton.innerHTML = `<i class="material-icons align-middle me-1">add</i> เพิ่มไฟล์สัญญา`; addButton.onclick = triggerNewFileInput; addButtonContainer.appendChild(addButton); } }
-            function triggerNewFileInput() { const fileInput = document.createElement('input'); fileInput.type = 'file'; fileInput.accept = 'image/*,.pdf'; fileInput.style.display = 'none'; fileInput.onchange = (event) => { const file = event.target.files[0]; if (!file) return; const listContainer = document.getElementById('file-upload-list'); const fileItem = document.createElement('div'); fileItem.className = 'file-upload-item d-flex align-items-center justify-content-between p-2 mt-1 bg-light rounded'; fileItem.fileObject = file; const fileNameSpan = document.createElement('span'); fileNameSpan.textContent = file.name; fileNameSpan.className = 'text-truncate'; const removeButton = document.createElement('button'); removeButton.type = 'button'; removeButton.className = 'btn-close ms-2'; removeButton.onclick = () => { fileItem.remove(); updateFileUploadUI(); }; fileItem.appendChild(fileNameSpan); fileItem.appendChild(removeButton); listContainer.appendChild(fileItem); updateFileUploadUI(); }; document.body.appendChild(fileInput); fileInput.click(); document.body.removeChild(fileInput); }
-            
-            // Modals
-            function openContractModal (branchId = null) { const form = document.getElementById('contract-form'); form.reset(); document.getElementById('file-upload-list').innerHTML = ''; updateFileUploadUI(); const modalTitle = document.getElementById('contractModalLabel'); const branchIdInput = document.getElementById('form-contract-branchId'); if (branchId) { modalTitle.textContent = 'แก้ไขข้อมูลสัญญา'; branchIdInput.readOnly = true; const contract = allContracts.find(c => c.branchId === branchId); if (contract) { Object.keys(contract).forEach(key => { const el = document.getElementById(`form-contract-${key}`); if(el) el.value = contract[key]; }); } } else { modalTitle.textContent = 'เพิ่มสัญญาใหม่'; branchIdInput.readOnly = false; document.getElementById('form-contract-regional').value = 'P026'; } contractModal.show(); }
-            function openUserModal(userEmail = null) { const form = document.getElementById('user-form'); form.reset(); const modalTitle = document.getElementById('userModalLabel'); const emailInput = document.getElementById('form-user-email'); const passwordInput = document.getElementById('form-user-password'); if (userEmail) { modalTitle.textContent = 'แก้ไขข้อมูลผู้ใช้งาน'; emailInput.readOnly = true; passwordInput.placeholder = "เว้นว่างไว้หากไม่ต้องการเปลี่ยน"; passwordInput.required = false; const user = allUsers.find(u => u.email === userEmail); if (user) { Object.keys(user).forEach(key => { const el = document.getElementById(`form-user-${key}`); if(el) el.value = user[key]; }); } } else { modalTitle.textContent = 'เพิ่มผู้ใช้ใหม่'; emailInput.readOnly = false; passwordInput.placeholder = "กำหนดรหัสผ่าน"; passwordInput.required = true; } userModal.show(); }
-            function openFileViewerModal(urlsString) { const container = document.getElementById('file-links-container'); container.innerHTML = ''; const urls = urlsString.split(', '); if(urls.length > 0 && urls[0]) { urls.forEach((url, index) => { const link = document.createElement('a'); link.href = url; link.target = '_blank'; link.className = 'btn btn-outline-primary d-block text-start mb-2'; link.innerHTML = `<i class="material-icons align-middle me-2">description</i> สัญญาเช่า ${index + 1}`; container.appendChild(link); }); } else { container.innerHTML = '<p class="text-muted">ไม่พบไฟล์แนบ</p>'; } fileViewerModal.show(); }
-
-            // CRUD Actions
-            async function handleSaveContract() { 
-                const saveButton = document.getElementById('save-contract-button'); 
-                const originalButtonHTML = saveButton.innerHTML; 
-                const contractData = { 
-                    branchId: document.getElementById('form-contract-branchId').value, 
-                    name: document.getElementById('form-contract-name').value, 
-                    regional: document.getElementById('form-contract-regional').value, 
-                    district: document.getElementById('form-contract-district').value, 
-                    unitCount: document.getElementById('form-contract-unitCount').value, 
-                    monthlyRent: document.getElementById('form-contract-monthlyRent').value, 
-                    startDate: document.getElementById('form-contract-startDate').value, 
-                    endDate: document.getElementById('form-contract-endDate').value 
-                }; 
-                if (!contractData.branchId || !contractData.name || !contractData.endDate) { showErrorAlert('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน'); return; } 
-                saveButton.disabled = true; 
-                saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังประมวลผล...`; 
-                const fileItems = document.querySelectorAll('#file-upload-list .file-upload-item'); 
-                const filesToUpload = Array.from(fileItems).map(item => item.fileObject); 
-                let fileDataArray = []; 
-                if (filesToUpload.length > 0) { 
-                    const readFileAsBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve({ fileName: file.name, mimeType: file.type, content: reader.result.split(',')[1] }); reader.onerror = (error) => reject(error); reader.readAsDataURL(file); }); 
-                    try { fileDataArray = await Promise.all(filesToUpload.map(readFileAsBase64)); } catch (error) { showErrorAlert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + error.message); saveButton.disabled = false; saveButton.innerHTML = originalButtonHTML; return; } 
-                } 
-                contractData.files = fileDataArray; 
-                saveButton.innerHTML = fileDataArray.length > 0 ? `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังอัปโหลด...` : `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังบันทึก...`; 
-                postDataToGAS('saveContract', contractData).then(() => { showSuccessToast('บันทึกข้อมูลสำเร็จ!'); contractModal.hide(); loadContractsData(); loadDashboardData(); }).catch(error => { showErrorAlert(error.message); }).finally(() => { saveButton.disabled = false; saveButton.innerHTML = originalButtonHTML; }); 
-            }
-            function handleDeleteContract(branchId) { const contract = allContracts.find(c => c.branchId === branchId); showConfirmDialog('ยืนยันการลบ', `ต้องการลบสัญญาของสาขา "${contract ? contract.name : branchId}"?`).then(result => { if (result.isConfirmed) { fetchDataFromGAS('deleteContract', { branchId: branchId }).then(() => { showSuccessToast('ลบข้อมูลสำเร็จ!'); loadContractsData(); loadDashboardData(); }).catch(error => showErrorAlert(error.message)); } }); }
-            function handleSaveUser() { const saveButton = document.getElementById('save-user-button'); const originalButtonHTML = saveButton.innerHTML; const userData = { email: document.getElementById('form-user-email').value, name: document.getElementById('form-user-name').value, password: document.getElementById('form-user-password').value, role: document.getElementById('form-user-role').value, permissionArea: document.getElementById('form-user-permissionArea').value }; if (!userData.email || !userData.name) { showErrorAlert('กรุณากรอก Email และ ชื่อ'); return; } if (!document.getElementById('form-user-email').readOnly && !userData.password) { showErrorAlert('กรุณากำหนดรหัสผ่านสำหรับผู้ใช้ใหม่'); return; } saveButton.disabled = true; saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังบันทึก...`; postDataToGAS('saveUser', userData).then(() => { showSuccessToast('บันทึกข้อมูลสำเร็จ!'); userModal.hide(); loadUsersData(); }).catch(error => { showErrorAlert(error.message); }).finally(() => { saveButton.disabled = false; saveButton.innerHTML = originalButtonHTML; }); }
-            function handleDeleteUser(userEmail) { const user = allUsers.find(u => u.email === userEmail); showConfirmDialog('ยืนยันการลบ', `ต้องการลบผู้ใช้ "${user ? user.name : userEmail}"?`).then(result => { if (result.isConfirmed) { fetchDataFromGAS('deleteUser', { email: userEmail }).then(() => { showSuccessToast('ลบผู้ใช้สำเร็จ!'); loadUsersData(); }).catch(error => showErrorAlert(error.message)); } }); }
-
-            // --- App Initialization ---
-            function initializeApp() {
-                contractModal = new bootstrap.Modal(document.getElementById('contract-modal'));
-                userModal = new bootstrap.Modal(document.getElementById('user-modal'));
-                fileViewerModal = new bootstrap.Modal(document.getElementById('file-viewer-modal'));
-                
-                document.getElementById('login-button').addEventListener('click', handleLogin);
-                document.getElementById('password').addEventListener('keyup', e => { if (e.key === 'Enter') handleLogin(); });
-                logoutButton.addEventListener('click', handleLogout);
-                
-                navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const pageId = link.getAttribute('href').substring(1) + '-content'; navLinks.forEach(l => l.classList.remove('active')); link.classList.add('active'); showPage(pageId); }); });
-
-                document.getElementById('contracts-table-body').addEventListener('click', (e) => { 
-                    const editBtn = e.target.closest('.btn-edit-contract'); 
-                    const deleteBtn = e.target.closest('.btn-delete-contract');
-                    const viewBtn = e.target.closest('.btn-view-files');
-
-                    if (editBtn) openContractModal(editBtn.dataset.branchId); 
-                    if (deleteBtn) handleDeleteContract(deleteBtn.dataset.branchId);
-                    if (viewBtn) openFileViewerModal(viewBtn.dataset.fileUrls);
-                });
-                document.getElementById('users-table-body').addEventListener('click', (e) => { const editBtn = e.target.closest('.btn-edit-user'); const deleteBtn = e.target.closest('.btn-delete-user'); if (editBtn) openUserModal(editBtn.dataset.userEmail); if (deleteBtn) handleDeleteUser(deleteBtn.dataset.userEmail); });
-                
-                document.querySelectorAll('#contracts-content .sortable').forEach(th => th.addEventListener('click', e => handleSort(e, 'contract')));
-                document.querySelectorAll('#users-content .sortable').forEach(th => th.addEventListener('click', e => handleSort(e, 'user')));
-                ['contract-search-input', 'contract-status-filter', 'contract-start-date', 'contract-end-date'].forEach(id => document.getElementById(id).addEventListener('input', applyContractFilters));
-                document.getElementById('contract-clear-filter-btn').addEventListener('click', () => { ['contract-search-input', 'contract-status-filter', 'contract-start-date', 'contract-end-date'].forEach(id => document.getElementById(id).value = ''); applyContractFilters(); });
-                ['user-search-input', 'user-role-filter'].forEach(id => document.getElementById(id).addEventListener('input', applyUserFilters));
-                ['log-search-input', 'log-start-date', 'log-end-date'].forEach(id => document.getElementById(id).addEventListener('input', applyLogFilters));
-                document.getElementById('log-clear-filter-btn').addEventListener('click', () => { ['log-search-input', 'log-start-date', 'log-end-date'].forEach(id => document.getElementById(id).value = ''); applyLogFilters(); });
-                
-                document.getElementById('card-total').addEventListener('click', () => navigateToContractsAndFilter(''));
-                document.getElementById('card-expiring').addEventListener('click', () => navigateToContractsAndFilter('status-warning'));
-                document.getElementById('card-expired').addEventListener('click', () => navigateToContractsAndFilter('status-expired'));
-                
-                document.getElementById('add-contract-btn').addEventListener('click', () => openContractModal());
-                document.getElementById('save-contract-button').addEventListener('click', handleSaveContract);
-                document.getElementById('add-user-btn').addEventListener('click', () => openUserModal());
-                document.getElementById('save-user-button').addEventListener('click', handleSaveUser);
-                
-                checkSession();
-            }
-            
-            initializeApp();
         });
-    </script>
-</body>
+        
+        document.addEventListener('click', e => {
+            const bell = document.getElementById('notificationBell');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const userMenuButton = document.getElementById('userMenuButton');
+            const userDropdown = document.getElementById('userDropdown');
+
+            if (!notificationDropdown.classList.contains('hidden') && !bell.contains(e.target) && !notificationDropdown.contains(e.target) && !e.target.closest('#notificationBell')) {
+                notificationDropdown.classList.add('hidden');
+            }
+            
+            if (!userDropdown.classList.contains('hidden') && !userMenuButton.contains(e.target) && !userDropdown.contains(e.target) && !e.target.closest('#userMenuButton')) {
+                userDropdown.classList.add('hidden');
+            }
+
+            if (e.target.matches('.remove-file-btn')) {
+                e.preventDefault();
+                const { mode, index, type } = e.target.dataset;
+                const idx = parseInt(index);
+                if (mode === 'add') {
+                    fileManager.add.splice(idx, 1);
+                } else if (mode === 'edit') {
+                    if (type === 'new') {
+                        fileManager.edit.new.splice(idx, 1);
+                    } else if (type === 'existing') {
+                        const removedFile = fileManager.edit.existing.splice(idx, 1)[0];
+                        if(removedFile) fileManager.edit.toDelete.push(removedFile.originalUrl);
+                    }
+                }
+                renderFilePreviews(mode);
+            }
+        });
+
+        ['filterDistrict', 'filterBranch', 'filterStatus'].forEach(id => document.getElementById(id).addEventListener('input', filterContracts));
+        document.getElementById('filterLogsBtn')?.addEventListener('click', filterLogs);
+        document.getElementById('resetLogsBtn')?.addEventListener('click', resetLogFilter);
+
+        document.getElementById('userSearchInput')?.addEventListener('input', filterUsers);
+
+        const setupModal = (m, o, c) => { if(o) document.getElementById(o).addEventListener('click', () => document.getElementById(m).classList.add('active')); c.forEach(id => document.getElementById(id).addEventListener('click', () => document.getElementById(m).classList.remove('active'))); };
+        setupModal('addUserModal', 'addUserBtn', ['closeAddUserModal', 'cancelAddUser']);
+        setupModal('editUserModal', null, ['closeEditUserModal', 'cancelEditUser']);
+        setupModal('editModal', null, ['closeEditModal', 'cancelEdit']);
+
+        // --- START: ‼️ เพิ่ม ‼️ ---
+        setupModal('changePasswordModal', 'changePasswordBtn', ['closeChangePasswordModal', 'cancelChangePassword']);
+        // --- END: เพิ่ม ‼️ ---
+
+        document.getElementById('addContractForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            try {
+                const formData = Object.fromEntries(new FormData(e.target));
+                formData.contractFilesData = await getFilesAsBase64(fileManager.add);
+                await api.addContract(formData);
+                UI.showToast('เพิ่มสัญญาสำเร็จ!');
+                e.target.reset(); navigateToPage('contracts');
+            } catch (error) { 
+                UI.showToast(`เพิ่มสัญญาไม่สำเร็จ: ${error.message}`, 'error');
+            } finally { 
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>บันทึกสัญญา';
+            }
+        });
+
+        document.getElementById('editContractForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            try {
+                const formData = Object.fromEntries(new FormData(e.target));
+                formData.contractFilesData = await getFilesAsBase64(fileManager.edit.new);
+                formData.filesToDelete = fileManager.edit.toDelete;
+                await api.updateContract(formData);
+                UI.showToast('แก้ไขสัญญาสำเร็จ!');
+                document.getElementById('editModal').classList.remove('active');
+                await loadContractsPage();
+            } catch (error) { 
+                UI.showToast(`แก้ไขสัญญาไม่สำเร็จ: ${error.message}`, 'error');
+            } finally { 
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>บันทึก';
+            }
+        });
+        
+        document.getElementById('addUserForm').addEventListener('submit', async e => { 
+            e.preventDefault(); 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            try {
+                const fd = new FormData(e.target); const d = Object.fromEntries(fd); 
+                d.canAdd = fd.has('canAdd'); d.canEdit = fd.has('canEdit'); d.canDelete = fd.has('canDelete');
+                await api.addUser(d);
+                UI.showToast('เพิ่มผู้ใช้สำเร็จ!');
+                document.getElementById('addUserModal').classList.remove('active'); e.target.reset(); await loadUsersPage();
+            } catch(error) { 
+                UI.showToast(`เพิ่มผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error');
+            } finally { 
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>บันทึก';
+            }
+        });
+        document.getElementById('editUserForm').addEventListener('submit', async e => { 
+            e.preventDefault(); 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            try {
+                const fd = new FormData(e.target); const d = Object.fromEntries(fd); 
+                d.canAdd = fd.has('canAdd'); d.canEdit = fd.has('canEdit'); d.canDelete = fd.has('canDelete');
+                await api.updateUser(d);
+                UI.showToast('แก้ไขผู้ใช้สำเร็จ!');
+                document.getElementById('editUserModal').classList.remove('active'); await loadUsersPage();
+            } catch(error) { 
+                UI.showToast(`แก้ไขผู้ใช้ไม่สำเร็จ: ${error.message}`, 'error');
+            } finally { 
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>บันทึก';
+            }
+        });
+
+        // --- START: ‼️ เพิ่ม ‼️ ---
+        document.getElementById('changePasswordForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const form = e.target;
+            const fd = new FormData(form);
+            const data = Object.fromEntries(fd);
+
+            if (data.newPassword !== data.confirmPassword) {
+                UI.showToast('รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', 'error');
+                return;
+            }
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            
+            try {
+                // เรียกใช้ API ที่เราสร้างในขั้นตอนที่ 1
+                const { message } = await api.changePassword({ 
+                    oldPassword: data.oldPassword, 
+                    newPassword: data.newPassword 
+                });
+                UI.showToast(message || 'เปลี่ยนรหัสผ่านสำเร็จ!', 'success');
+                document.getElementById('changePasswordModal').classList.remove('active');
+                form.reset();
+            } catch (error) {
+                UI.showToast(error.message || 'เกิดข้อผิดพลาด', 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-key mr-2"></i>ยืนยันการเปลี่ยนแปลง';
+            }
+        });
+        // --- END: เพิ่ม ‼️ ---
+
+        document.getElementById('addContractFiles').addEventListener('change', e => handleFileSelection(e, 'add'));
+        document.getElementById('editContractFiles').addEventListener('change', e => handleFileSelection(e, 'edit'));
+    });
+  </script>
+ </body>
 </html>
