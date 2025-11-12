@@ -282,8 +282,8 @@
      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <div class="bg-white rounded-2xl shadow-md p-6">
        <h2 class="text-xl font-bold text-gray-800 mb-4">สถานะสัญญา</h2>
-       <div class="w-5/6 mx-auto"> 
-       <canvas id="statusChart"></canvas>
+       <div class="w-1/2 mx-auto"> 
+        <canvas id="statusChart"></canvas>
        </div>
       </div>
       <div class="bg-white rounded-2xl shadow-md p-6">
@@ -937,9 +937,34 @@
             const expiringList = contracts.filter(c => getContractStatus(c.endDate) !== 'active').sort((a, b) => getDaysRemaining(a.endDate) - getDaysRemaining(b.endDate)).slice(0, 5);
             document.getElementById('expiringContractsTable').innerHTML = expiringList.length ? expiringList.map(c => `<tr><td>${c.branchId}</td><td>${c.name}</td><td>${format.date(c.endDate)}</td><td>${getDaysRemaining(c.endDate)} วัน</td><td>${getStatusBadge(getContractStatus(c.endDate))}</td></tr>`).join('') : `<tr><td colspan="5" class="text-center text-gray-500">ไม่มีสัญญาที่ใกล้หมดอายุ</td></tr>`;
             if (CONFIG.statusChart) CONFIG.statusChart.destroy();
-            // --- START: ‼️ แก้ไข (เปลี่ยน cutout จาก 70% เป็น 80%) ‼️ ---
-            CONFIG.statusChart = new Chart(document.getElementById('statusChart'), { type: 'doughnut', data: { labels: ['ยังไม่ครบกำหนด', 'ใกล้หมดอายุ (60 วัน)', 'หมดอายุแล้ว'], datasets: [{ data: [statusCounts.active, statusCounts.expiring, statusCounts.expired], backgroundColor: ['#4DB6AC', '#FFA726', '#EF5350'], borderWidth: 0 }] }, options: { responsive: true, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'Kanit' } } } } } });
+            
+            // --- START: ‼️ แก้ไข (ปรับป้ายกำกับและขนาดกล่อง) ‼️ ---
+            CONFIG.statusChart = new Chart(document.getElementById('statusChart'), { 
+                type: 'doughnut', 
+                data: { 
+                    labels: ['ยังไม่ครบกำหนด', 'ใกล้หมดอายุ (60 วัน)', 'หมดอายุแล้ว'], // <-- คืนค่า (60 วัน)
+                    datasets: [{ 
+                        data: [statusCounts.active, statusCounts.expiring, statusCounts.expired], 
+                        backgroundColor: ['#4DB6AC', '#FFA726', '#EF5350'], 
+                        borderWidth: 0 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    cutout: '50%', 
+                    plugins: { 
+                        legend: { 
+                            position: 'top', // <-- คงไว้ที่ด้านบน
+                            labels: { 
+                                font: { family: 'Kanit' },
+                                boxWidth: 14 // <-- ลดขนาดกล่องสี
+                            } 
+                        } 
+                    } 
+                } 
+            });
             // --- END: ‼️ แก้ไข ‼️ ---
+
             const districtData = contracts.reduce((acc, c) => { acc[c.district] = (acc[c.district] || 0) + c.monthlyRent; return acc; }, {});
             const sortedDistricts = Object.keys(districtData).sort();
             if (CONFIG.regionChart) CONFIG.regionChart.destroy();
